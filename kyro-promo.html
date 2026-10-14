@@ -14697,7 +14697,7 @@ html.theme-light #promoCap span {
 .promo-end-sub { font-size: 12px; letter-spacing: 4px; color: rgba(20, 20, 40, 0.38); padding-left: 4px; }
 
 </style>
-<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
+<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示<br><span style="opacity:.55;font-size:11px;letter-spacing:1px">演示版 v4 · 不请求全屏</span></div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
 <script id="promoScript">
 /* ===== KYRO 宣传演示时间轴 v3（约 92 秒）===== */
 (function () {
@@ -14990,6 +14990,18 @@ html.theme-light #promoCap span {
         log('演示开始，' + TL.length + ' 步');
     }
 
+    /* ★ 兜底：万一因为上次遗留仍处于全屏状态，主动退出（本演示不请求全屏） */
+    function leaveFullscreen() {
+        try {
+            var d = document;
+            var full = d.fullscreenElement || d.webkitFullscreenElement;
+            if (full) {
+                var xf = d.exitFullscreen || d.webkitExitFullscreen;
+                if (xf) xf.call(d);
+            }
+        } catch (e) {}
+    }
+
     function boot() {
         capEl = document.getElementById('promoCap');
         barEl = document.getElementById('promoBar');
@@ -15000,11 +15012,13 @@ html.theme-light #promoCap span {
         placeCap('bot');
         window.addEventListener('resize', function () { placeCap(capSideNow); }, false);
         build();
+        leaveFullscreen();
         if (AUTO) { setTimeout(run, 300); return; }
         if (startEl) {
             startEl.addEventListener('click', function () {
                 /* ★ 不再请求全屏：部分机型（如小米）进入全屏后会被系统自动旋转成横屏。
                    想画面更干净，用"添加到主屏幕"打开即可。 */
+                leaveFullscreen();
                 startEl.className = 'gone';
                 setTimeout(run, 260);
             }, false);
