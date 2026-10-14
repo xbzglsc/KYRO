@@ -14608,7 +14608,7 @@ if (document.readyState === 'loading') {
 
 /* ---------- 上下两条渐变压暗，交叉淡入淡出（不做位移，避免"顶着气泡"感） ---------- */
 #promoScrimBot, #promoScrimTop {
-    position: fixed; left: 0; right: 0; height: 200px;
+    position: fixed; left: 0; right: 0; height: 180px;
     z-index: 2147483001; pointer-events: none;
     opacity: 0;
     -webkit-transition: opacity 0.42s ease;
@@ -14616,13 +14616,13 @@ if (document.readyState === 'loading') {
 }
 #promoScrimBot {
     bottom: 0;
-    background-image: -webkit-linear-gradient(bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
-    background-image: linear-gradient(to top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to top, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
 }
 #promoScrimTop {
     top: 0;
-    background-image: -webkit-linear-gradient(top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: -webkit-linear-gradient(top, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
 }
 #promoScrimBot.on, #promoScrimTop.on { opacity: 1; }
 
@@ -14656,12 +14656,12 @@ if (document.readyState === 'loading') {
 }
 /* ★ 浅色主题：底色换白、字换黑 */
 html.theme-light #promoScrimBot {
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
-    background-image: linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
 }
 html.theme-light #promoScrimTop {
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
 }
 html.theme-light #promoCap span {
     color: #101014;
@@ -14766,6 +14766,20 @@ html.theme-light #promoCap span {
     /* ---------- 工具 ---------- */
     function tap(x, y) { var a = window.__kyroWelcome; if (a && a.tap) { a.tap(x, y); return true; } return false; }
     function clickTheme(v) { var b = document.querySelector('.theme-seg-btn[data-theme="' + v + '"]'); if (b) b.click(); }
+    /* ★ 主题演示前，先把设置页滚到"主题模式"那一栏，观众才看得清在哪切 */
+    function scrollToTheme() {
+        try {
+            var el = document.getElementById('themeSeg');
+            if (!el) return;
+            var sc = document.getElementById('settingsScroll');
+            if (sc) {
+                var b = el.getBoundingClientRect(), r = sc.getBoundingClientRect();
+                sc.scrollTop += (b.top - r.top) - (r.height / 2 - b.height / 2);
+            } else {
+                el.scrollIntoView({ block: 'center' });
+            }
+        } catch (e) {}
+    }
 
     var pillTimer = null;
     function applyPill() {
@@ -14845,7 +14859,7 @@ html.theme-light #promoCap span {
         2: '输入即发送，回车即可',
         3: '会话列表，每个会话独立角色',
         4: '设置：账户 · 配置 · 导出',
-        6: 'AI 配置：任意兼容 OpenAI 的模型',
+        6: 'AI 配置：想接哪个模型都行',
         7: '语音朗读：边听边想',
         8: '聊天记录导出与导入',
         10: '剩下的交给你自己探索'
@@ -14881,10 +14895,10 @@ html.theme-light #promoCap span {
         cap(0, 'KYRO · 一眼洞悉，万语千言');
         at(1800, safe(function () { tap(cx, cy); }, '门槛'), 'gate');
 
-        cap(8000, '双击屏幕，从涟漪中央进入');
+        cap(8000, '双击屏幕进入');
         at(8800, safe(function () { tap(cx, cy - 20); tap(cx + 6, cy); }, '双击'), 'dbl');
 
-        cap(12500, '30 秒带你逛一遍常用功能');
+        cap(12500, '30 秒逛完常用功能');
         at(14500, safe(function () { phase = 'guide'; var ob = window.__kyroOB; if (ob) ob.begin(); }, 'begin'), 'begin');
 
         /* ★ 要 12 次：第 11 次才是"在最后一步再点一次"→ 触发收尾卡片 */
@@ -14901,31 +14915,33 @@ html.theme-light #promoCap span {
 
         /* 收尾后的设置子页 */
         at(43000, safe(function () { showSettingsPage('tts'); }, 'tts'), 'tts');
-        cap(43200, '语音朗读 TTS：多种音色与语速');
+        cap(43200, '语音朗读，挑个喜欢的声音');
         at(46000, safe(function () { showSettingsPage('export'); }, 'export'), 'export');
-        cap(46200, '聊天记录导出 / 导入，随时备份');
+        cap(46200, '聊天记录随时备份');
         at(49500, safe(function () { showSettingsPage('main'); }, 'main'), 'main');
-        cap(49700, '云端同步，多设备接续');
+        cap(49700, '云端同步，换设备接着聊');
 
         /* ★ 主题演示：深色 → 聊天页 → 会话列表 → 回设置 → 切回浅色 */
-        cap(52500, '深色 / 浅色 / 跟随系统，一键切换');
-        at(53800, safe(function () { phase = 'theme'; clickTheme('dark'); }, '深色'), 'dark');
-        cap(54300, '先切成深色');
+        cap(52500, '深色 · 浅色 · 跟随系统');
+        at(53000, safe(function () { phase = 'theme'; scrollToTheme(); }, '滚到主题'), 'sc1');
+        at(54500, safe(function () { clickTheme('dark'); }, '深色'), 'dark');
+        cap(54300, '先换成深色');
         at(57000, safe(function () { closeSettingsModal(); }, '关设置'), 'close1');
-        cap(57500, '整屏实时切换，不只是换个配色');
+        cap(57500, '整个界面一起变');
         at(60500, safe(function () { if (typeof toggleSidebar === 'function') toggleSidebar(); }, '开侧栏'), 'sbopen');
-        cap(61000, '会话列表也跟着一起切');
+        cap(61000, '会话列表也跟着变');
         at(64000, safe(function () { if (typeof toggleSidebar === 'function') toggleSidebar(); }, '关侧栏'), 'sbclose');
         at(66500, safe(function () { if (typeof openSettingsModal === 'function') openSettingsModal(); }, '回设置'), 'open2');
-        cap(66900, '回到设置，切回浅色');
-        at(68800, safe(function () { clickTheme('light'); }, '浅色'), 'light');
-        cap(69300, '习惯浅色？一键切回');
+        cap(66900, '回到设置');
+        at(67600, safe(scrollToTheme, '滚到主题2'), 'sc2');
+        at(69100, safe(function () { clickTheme('light'); }, '浅色'), 'light');
+        cap(69300, '再切回浅色');
         at(71500, safe(function () { closeSettingsModal(); }, '关设置2'), 'close2');
         cap(72000, '直接开始对话');
 
         /* ★ 假模型 + 假流式回复（字幕置顶，别挡对话） */
         at(73500, safe(function () { phase = 'reply'; forceTop = true; fakePill(); }, '假模型'), 'pill');
-        cap(73900, '选好模型，直接提问');
+        cap(73900, '选个模型，直接问');
         at(75200, safe(function () { typeComposer('帮我把这段需求整理成一份周报'); }, '打字'), 'typing');
         at(78800, safe(fakeReply, '假回复'), 'reply');
         cap(79200, '流式回复，边生成边看');
