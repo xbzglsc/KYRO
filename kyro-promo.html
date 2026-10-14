@@ -14569,7 +14569,7 @@ if (document.readyState === 'loading') {
 #promoStart {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0;
     z-index: 2147483000;
-    background-color: #0a0a0c;
+    background-color: #fbfbfd;
     display: -webkit-box; display: -webkit-flex; display: flex;
     -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column;
     -webkit-box-align: center; -webkit-align-items: center; align-items: center;
@@ -14584,15 +14584,16 @@ if (document.readyState === 'loading') {
     display: -webkit-box; display: -webkit-flex; display: flex;
     -webkit-box-align: center; -webkit-align-items: center; align-items: center;
     -webkit-box-pack: center; -webkit-justify-content: center; justify-content: center;
-    box-shadow: 0 12px 40px rgba(109, 74, 255, 0.35);
+    border: 1px solid rgba(20, 20, 40, 0.06);
+    box-shadow: 0 12px 40px rgba(109, 74, 255, 0.20);
 }
 .promo-start-logo img { width: 54px; height: 54px; object-fit: contain; }
 .promo-start-title {
-    font-size: 22px; font-weight: 500; letter-spacing: 4px; color: #ffffff;
+    font-size: 22px; font-weight: 500; letter-spacing: 4px; color: #16161c;
     margin-bottom: 10px; padding-left: 4px;
 }
 .promo-start-sub {
-    font-size: 12px; letter-spacing: 2px; color: rgba(255, 255, 255, 0.42);
+    font-size: 12px; letter-spacing: 2px; color: rgba(20, 20, 40, 0.42);
     line-height: 1.9;
 }
 .promo-start-btn {
@@ -14608,7 +14609,7 @@ if (document.readyState === 'loading') {
 
 /* ---------- 上下两条渐变压暗，交叉淡入淡出（不做位移，避免"顶着气泡"感） ---------- */
 #promoScrimBot, #promoScrimTop {
-    position: fixed; left: 0; right: 0; height: 180px;
+    position: fixed; left: 0; right: 0; height: 200px;
     z-index: 2147483001; pointer-events: none;
     opacity: 0;
     -webkit-transition: opacity 0.42s ease;
@@ -14616,13 +14617,13 @@ if (document.readyState === 'loading') {
 }
 #promoScrimBot {
     bottom: 0;
-    background-image: -webkit-linear-gradient(bottom, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
-    background-image: linear-gradient(to top, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
 }
 #promoScrimTop {
     top: 0;
-    background-image: -webkit-linear-gradient(top, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(6,6,12,0.84) 0%, rgba(6,6,12,0.48) 46%, rgba(6,6,12,0) 100%);
+    background-image: -webkit-linear-gradient(top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
 }
 #promoScrimBot.on, #promoScrimTop.on { opacity: 1; }
 
@@ -14656,12 +14657,12 @@ if (document.readyState === 'loading') {
 }
 /* ★ 浅色主题：底色换白、字换黑 */
 html.theme-light #promoScrimBot {
-    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
-    background-image: linear-gradient(to top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
 }
 html.theme-light #promoScrimTop {
-    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
-    background-image: linear-gradient(to bottom, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.56) 46%, rgba(255,255,255,0) 100%);
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
 }
 html.theme-light #promoCap span {
     color: #101014;
@@ -14679,7 +14680,7 @@ html.theme-light #promoCap span {
 #promoEnd {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0;
     z-index: 2147483004;
-    background-color: #0a0a0c;
+    background-color: #fbfbfd;
     display: none;
     -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column;
     -webkit-box-align: center; -webkit-align-items: center; align-items: center;
@@ -14690,10 +14691,10 @@ html.theme-light #promoCap span {
 }
 #promoEnd.on { display: -webkit-box; display: -webkit-flex; display: flex; opacity: 1; }
 .promo-end-title {
-    font-size: 26px; font-weight: 500; letter-spacing: 8px; color: #ffffff;
+    font-size: 26px; font-weight: 500; letter-spacing: 8px; color: #16161c;
     padding-left: 8px; margin-bottom: 14px;
 }
-.promo-end-sub { font-size: 12px; letter-spacing: 4px; color: rgba(255, 255, 255, 0.38); padding-left: 4px; }
+.promo-end-sub { font-size: 12px; letter-spacing: 4px; color: rgba(20, 20, 40, 0.38); padding-left: 4px; }
 
 </style>
 <div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示 · 自动进入全屏</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
@@ -14825,10 +14826,10 @@ html.theme-light #promoCap span {
             var ask = (el && el.value) ? el.value : '帮我把这段需求整理成一份周报';
             if (el) { el.value = ''; try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
             conv.messages.push({ role: 'user', content: ask });
-            var full = '好的，我按「本周进展 / 关键指标 / 下周计划」三块整理：\n\n' +
-                       '1. 本周进展：完成客户端打包与分发包链路，下载入口已上线。\n' +
-                       '2. 关键指标：首屏 0.8s，流式首字平均 0.4s。\n' +
-                       '3. 下周计划：接入更多模型，补齐语音朗读音色。';
+            var full = '好的，我按三块整理：\n\n' +
+                       '1. 本周进展：客户端打包与下载链路已完成。\n' +
+                       '2. 关键指标：首屏 0.8s，流式首字 0.4s。\n' +
+                       '3. 下周计划：接入更多模型，补齐语音音色。';
             var msg = { role: 'assistant', content: '' };
             conv.messages.push(msg);
             renderMessages(true);
