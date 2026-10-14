@@ -14565,7 +14565,7 @@ if (document.readyState === 'loading') {
 </script>
 
 <style id="promoStyle">
-/* ===== KYRO 宣传演示层（只注入到 kyro-promo.html，不影响正式文件） ===== */
+/* ===== KYRO 宣传演示层 ===== */
 #promoStart {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0;
     z-index: 2147483000;
@@ -14606,38 +14606,64 @@ if (document.readyState === 'loading') {
 @-webkit-keyframes promoPulse { 0%,100%{opacity:.86} 50%{opacity:1} }
 @keyframes promoPulse { 0%,100%{opacity:.86} 50%{opacity:1} }
 
-/* 字幕条 */
-#promoCap {
-    position: fixed; left: 0; right: 0; bottom: 9%;
-    z-index: 2147483001;
-    text-align: center; pointer-events: none;
+/* ---------- 上下两条渐变压暗，交叉淡入淡出（不做位移，避免"顶着气泡"感） ---------- */
+#promoScrimBot, #promoScrimTop {
+    position: fixed; left: 0; right: 0; height: 200px;
+    z-index: 2147483001; pointer-events: none;
     opacity: 0;
-    -webkit-transition: opacity 0.5s ease;
-    transition: opacity 0.5s ease;
+    -webkit-transition: opacity 0.42s ease;
+    transition: opacity 0.42s ease;
+}
+#promoScrimBot {
+    bottom: 0;
+    background-image: -webkit-linear-gradient(bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+}
+#promoScrimTop {
+    top: 0;
+    background-image: -webkit-linear-gradient(top, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(6,6,12,0.92) 0%, rgba(6,6,12,0.58) 46%, rgba(6,6,12,0) 100%);
+}
+#promoScrimBot.on, #promoScrimTop.on { opacity: 1; }
+
+/* ---------- 字幕文字：位置只用 transform 表达，因此可以平滑滑过去 ---------- */
+#promoCap {
+    position: fixed; left: 0; right: 0; top: 0;
+    z-index: 2147483002;
+    padding: 34px 34px 0;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    -webkit-transform: translateY(0);
+    transform: translateY(0);
+    -webkit-transition: opacity 0.45s ease, -webkit-transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: opacity 0.45s ease, transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 #promoCap.on { opacity: 1; }
 #promoCap span {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 22px;
-    background-color: rgba(10, 10, 14, 0.62);
+    display: block;
+    margin: 0 auto;
+    padding-left: 0;
+    border-left: 0;                       /* 去掉左侧竖线 */
+    text-align: center;
+    font-size: 16px; font-weight: 500; letter-spacing: 1.2px;
+    line-height: 1.6;
     color: #ffffff;
-    font-size: 14px; letter-spacing: 2px;
-    box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
-    max-width: 88vw;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
+    max-width: 92vw;
 }
 
 /* 顶部进度 */
 #promoBar {
     position: fixed; left: 0; top: 0; height: 2px; width: 0;
-    background-color: #6D4AFF; z-index: 2147483002;
+    background-color: #6D4AFF; z-index: 2147483003;
     box-shadow: 0 0 8px rgba(109, 74, 255, 0.8);
 }
 
 /* 结束卡 */
 #promoEnd {
     position: fixed; left: 0; top: 0; right: 0; bottom: 0;
-    z-index: 2147483003;
+    z-index: 2147483004;
     background-color: #0a0a0c;
     display: none;
     -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column;
@@ -14655,25 +14681,61 @@ if (document.readyState === 'loading') {
 .promo-end-sub { font-size: 12px; letter-spacing: 4px; color: rgba(255, 255, 255, 0.38); padding-left: 4px; }
 
 </style>
-<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示 · 自动进入全屏</div><div class="promo-start-btn">开始演示</div></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
+<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示 · 自动进入全屏</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
 <script id="promoScript">
-/* ===== KYRO 宣传演示时间轴（约 57 秒）===== */
+/* ===== KYRO 宣传演示时间轴 v2（约 62 秒）===== */
 (function () {
-    var qs = location.search;
-    var AUTO = /[?&]auto=1/.test(qs);      /* 自动开始（不点覆盖层、不全屏），用于自动验证 */
+    var AUTO = /[?&]auto=1/.test(location.search);
     var started = false;
     var TL = [];
     var t0 = 0;
-    var capEl, barEl, startEl, endEl;
-    var TOTAL = 58000;
+    var capEl, barEl, startEl, endEl, scrimBot, scrimTop;
+    var TOTAL = 88000;
+    var capSideNow = 'bot';
 
     function log(m) { try { console.log('[promo] ' + m); } catch (e) {} }
-
-    function at(ms, fn, name) {
-        TL.push({ ms: ms, fn: fn, name: name || '' });
+    function at(ms, fn, name) { TL.push({ ms: ms, fn: fn, name: name || '' }); }
+    function cap(ms, text) { at(ms, function () { showCap(text); }, 'cap'); }
+    function safe(fn, name) {
+        return function () {
+            try { fn(); } catch (e) { log('步骤失败 ' + name + ' : ' + (e && e.message)); }
+        };
     }
-    function cap(ms, text) {
-        at(ms, function () { showCap(text); }, 'cap:' + text.slice(0, 12));
+
+    /* ---------- 字幕：位置只用 transform 表达，所以能平滑滑过去 ---------- */
+    function capHeight() { return capEl ? (capEl.offsetHeight || 60) : 60; }
+
+    function placeCap(side) {
+        if (!capEl) return;
+        capSideNow = side;
+        var h = window.innerHeight || 640;
+        var y = (side === 'top') ? 4 : Math.max(0, h - capHeight() - 92);
+        capEl.style.webkitTransform = 'translateY(' + y + 'px)';
+        capEl.style.transform = 'translateY(' + y + 'px)';
+        if (scrimBot) scrimBot.className = (side === 'bot') ? 'on' : '';
+        if (scrimTop) scrimTop.className = (side === 'top') ? 'on' : '';
+    }
+
+    /* 只有气泡真的压到"底部字幕带"时才让位；没有气泡就老实待在底部 */
+    function wantSide() {
+        try {
+            var tip = document.getElementById('obTip');
+            if (!tip) return 'bot';
+            var cs = getComputedStyle(tip);
+            if (cs.visibility === 'hidden' || cs.display === 'none' || parseFloat(cs.opacity) < 0.05) return 'bot';
+            var r = tip.getBoundingClientRect();
+            if (!r.width && !r.height) return 'bot';
+            var h = window.innerHeight || 640;
+            if (r.bottom > h - 168 && r.top < h) return 'top';
+            return 'bot';
+        } catch (e) { return 'bot'; }
+    }
+
+    function syncCap() {
+        if (!capEl || capEl.className.indexOf('on') === -1) return;
+        var s = wantSide();
+        if (s !== capSideNow) placeCap(s);
+        else if (capSideNow === 'bot') placeCap('bot');   /* 尺寸/换行变化时重新贴底 */
     }
 
     function showCap(text) {
@@ -14681,18 +14743,95 @@ if (document.readyState === 'loading') {
         var sp = capEl.querySelector('span');
         if (sp) sp.textContent = text;
         capEl.className = 'on';
+        placeCap(wantSide());
     }
-    function hideCap() { if (capEl) capEl.className = ''; }
+    function hideCap() {
+        if (capEl) capEl.className = '';
+        if (scrimBot) scrimBot.className = '';
+        if (scrimTop) scrimTop.className = '';
+    }
 
+    /* ---------- 小工具 ---------- */
     function tap(x, y) {
         var api = window.__kyroWelcome;
         if (api && api.tap) { api.tap(x, y); return true; }
         return false;
     }
-    function safe(fn, name) {
-        return function () {
-            try { fn(); } catch (e) { log('步骤失败 ' + name + ' : ' + (e && e.message)); }
-        };
+    function clickTheme(v) {
+        var b = document.querySelector('.theme-seg-btn[data-theme="' + v + '"]');
+        if (b) b.click();
+    }
+    /* 右上角状态胶囊：从"未配置 Key"变成模型名 */
+    var pillTimer = null;
+    function applyPill() {
+        try {
+            var t = document.getElementById('modelTag'), x = document.getElementById('modelTagText');
+            if (!t || !x) return;
+            if (x.innerText !== 'deepseekv4.1flash') x.innerText = 'deepseekv4.1flash';
+            if (t.className.indexOf('no-key') !== -1) t.className = t.className.replace(/\s*no-key/g, '');
+        } catch (e) {}
+    }
+    function fakePill() {
+        try {
+            if (window.appState && appState.config) {
+                if (!appState.config.apiKey) appState.config.apiKey = 'sk-demo-00000000000000000000';
+                appState.config.model = 'deepseek-chat';
+            }
+        } catch (e) {}
+        applyPill();
+        if (!pillTimer) pillTimer = setInterval(applyPill, 400);
+    }
+    function typeComposer(text) {
+        var el = document.getElementById('chatInput');
+        if (!el) return;
+        el.focus();
+        var i = 0;
+        (function tick() {
+            if (i > text.length) return;
+            el.value = text.slice(0, i);
+            try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+            i++;
+            setTimeout(tick, 135);
+        })();
+    }
+    /* 假流式回复：整列只渲染一次，之后只改最后一个气泡的文字 ——
+       之前每帧 renderMessages() 会把整列 innerHTML 清空重建，所以一直闪屏。 */
+    function fakeReply() {
+        try {
+            if (typeof getCurrentConv !== 'function') return;
+            var conv = getCurrentConv();
+            if (!conv) return;
+            if (!conv.messages) conv.messages = [];
+            var el = document.getElementById('chatInput');
+            var ask = (el && el.value) ? el.value : '帮我把这段需求整理成一份周报';
+            if (el) { el.value = ''; try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+            conv.messages.push({ role: 'user', content: ask });
+            var full = '好的，我按「本周进展 / 关键指标 / 下周计划」三块整理：\n\n' +
+                       '1. 本周进展：完成客户端打包与分发链路，下载入口已上线。\n' +
+                       '2. 关键指标：首屏 0.8s，流式首字平均 0.4s。\n' +
+                       '3. 下周计划：接入更多模型，补齐语音朗读音色。';
+            var msg = { role: 'assistant', content: '' };
+            conv.messages.push(msg);
+            renderMessages(true);                    /* 只在这里重建一次 */
+            setTimeout(function () {
+                var bubble = null;
+                try {
+                    var box = document.getElementById('messagesArea');
+                    var wrap = box ? box.lastElementChild : null;
+                    var ai = wrap ? wrap.querySelector('.message.ai') : null;
+                    var root = ai || wrap;
+                    bubble = root ? root.querySelector('.bubble') : null;
+                } catch (e) {}
+                if (!bubble) { msg.content = full; return; }
+                var i = 0;
+                var timer = setInterval(function () {
+                    i += 1;
+                    msg.content = full.slice(0, i);
+                    bubble.textContent = msg.content;   /* 只改文字 → 不闪 */
+                    if (i >= full.length) clearInterval(timer);
+                }, 42);
+            }, 140);
+        } catch (e) { log('假回复失败: ' + e.message); }
     }
 
     /* ---------- 时间轴 ---------- */
@@ -14700,23 +14839,17 @@ if (document.readyState === 'loading') {
         var w = window.innerWidth, h = window.innerHeight;
         var cx = Math.round(w * 0.5), cy = Math.round(h * 0.6);
 
+        /* 开局统一成深色（否则会跟着手机当前主题走，录出来不一致） */
+        at(120, safe(function () { if (typeof setTheme === 'function') setTheme('dark'); }, '起始深色'), 'dark0');
         cap(0, 'KYRO · 一眼洞悉，万语千言');
+        at(1800, safe(function () { tap(cx, cy); }, '门槛'), '门槛');
 
-        /* 1) 欢迎页门槛：点一下才亮出图标与打字机 */
-        at(1300, safe(function () { tap(cx, cy); }, '门槛'), '门槛');
+        cap(8000, '双击屏幕，从涟漪中央进入');
+        at(8800, safe(function () { tap(cx, cy - 20); tap(cx + 6, cy); }, '双击'), '双击');
 
-        cap(6200, '双击屏幕，从涟漪中央进入');
-        /* 2) 快速双击进入 */
-        at(6800, safe(function () { tap(cx, cy - 20); tap(cx + 6, cy); }, '双击'), '双击');
+        cap(12500, '30 秒带你逛一遍常用功能');
+        at(14500, safe(function () { var ob = window.__kyroOB; if (ob) ob.begin(); }, 'begin'), 'begin');
 
-        /* 3) 引导询问卡 */
-        cap(9600, '30 秒带你逛一遍常用功能');
-        at(11400, safe(function () {
-            var ob = window.__kyroOB;
-            if (ob && ob.begin) ob.begin();
-        }, '开始引导'), 'begin');
-
-        /* 4) 引导 11 步：每步 1.7s */
         var stepCaps = {
             0: '顶栏：切换模型 · 新建对话',
             2: '输入即发送，回车即可',
@@ -14727,63 +14860,48 @@ if (document.readyState === 'loading') {
             8: '聊天记录导出与导入',
             10: '剩下的交给你自己探索'
         };
-        var t = 12300;
         for (var i = 0; i < 11; i++) {
             (function (idx, when) {
-                if (stepCaps[idx]) cap(when - 260, stepCaps[idx]);
+                if (stepCaps[idx]) cap(when - 240, stepCaps[idx]);
                 at(when, safe(function () {
                     var ob = window.__kyroOB;
-                    if (!ob) return;
-                    if (idx === 0) return;              /* 第 0 步由 begin 展示 */
+                    if (!ob || idx === 0) return;
                     if (typeof ob.step === 'function' && ob.step() !== idx - 1) return;
                     ob.next();
                 }, 'step' + idx), 'step' + idx);
-            })(i, t + i * 1700);
+            })(i, 16000 + i * 2000);
         }
 
-        /* 5) 收尾卡片 → 直接进 AI 配置 */
-        cap(32500, '填个 API Key 就能开始');
-        at(34200, safe(function () {
-            var b = document.getElementById('obFinishBtn');
-            if (b) b.click();
-        }, '去填写'), 'finish');
+        cap(38500, '填个 API Key 就能开始');
+        at(40600, safe(function () { var b = document.getElementById('obFinishBtn'); if (b) b.click(); }, '去填写'), 'finish');
+        cap(41900, 'AI 配置：接口地址 · API Key · 模型列表 · 角色设定');
 
-        cap(35600, 'AI 配置：Base URL · 模型 · 温度 · 最大 Token');
+        at(45200, safe(function () { showSettingsPage('tts'); }, 'tts'), 'tts');
+        cap(45300, '语音朗读 TTS：多种音色与语速');
+        at(48600, safe(function () { showSettingsPage('export'); }, 'export'), 'export');
+        cap(48700, '聊天记录导出 / 导入，随时备份');
+        at(52000, safe(function () { showSettingsPage('main'); }, 'main'), 'main');
+        cap(52100, '云端同步，多设备接续');
 
-        /* 6) 设置内的几个子页 */
-        at(38600, safe(function () { showSettingsPage('tts'); }, 'tts'), 'tts');
-        cap(38700, '语音朗读 TTS：多种音色与语速');
+        /* ★ 主题切换演示 */
+        cap(55400, '深色 / 浅色 / 跟随系统，一键切换');
+        at(56600, safe(function () { clickTheme('light'); }, '浅色'), 'light');
+        cap(57500, '整屏实时切换，不只是换个配色');
+        at(61500, safe(function () { clickTheme('dark'); }, '深色'), 'dark');
+        cap(62100, '深色模式：深夜看着不刺眼');
 
-        at(42000, safe(function () { showSettingsPage('export'); }, 'export'), 'export');
-        cap(42100, '聊天记录导出 / 导入，随时备份');
+        at(65500, safe(function () { closeSettingsModal(); }, '关设置'), 'close');
+        cap(65900, '直接开始对话');
 
-        at(45200, safe(function () { showSettingsPage('main'); }, 'main'), 'main');
-        cap(45300, '云端同步，多设备接续');
+        /* ★ 假模型 + 假流式回复 */
+        at(68200, safe(fakePill, '假模型'), 'pill');
+        cap(68600, '选好模型，直接提问');
+        at(70000, safe(function () { typeComposer('帮我把这段需求整理成一份周报'); }, '打字'), 'typing');
+        at(75500, safe(fakeReply, '假回复'), 'reply');
+        cap(76200, '流式回复，边生成边看');
 
-        at(47800, safe(function () { if (typeof closeSettingsModal === 'function') closeSettingsModal(); }, '关设置'), 'close');
-        cap(48200, '直接开始对话');
-
-        /* 7) 输入框打字 */
-        at(49600, safe(function () {
-            var el = document.getElementById('chatInput');
-            if (!el) return;
-            el.focus();
-            var text = '帮我把这段需求整理成一份周报';
-            var i = 0;
-            (function tick() {
-                if (i > text.length) return;
-                el.value = text.slice(0, i);
-                try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
-                i++;
-                setTimeout(tick, 105);
-            })();
-        }, '打字'), 'typing');
-
-        /* 8) 收尾 */
-        at(54000, function () { hideCap(); }, 'hidecap');
-        at(54600, function () {
-            if (endEl) endEl.className = 'on';
-        }, 'end');
+        at(85000, function () { hideCap(); }, 'hidecap');
+        at(85800, function () { if (endEl) endEl.className = 'on'; }, 'end');
     }
 
     /* ---------- 运行 ---------- */
@@ -14796,13 +14914,13 @@ if (document.readyState === 'loading') {
         for (var i = 0; i < TL.length; i++) {
             (function (item) { setTimeout(item.fn, item.ms); })(TL[i]);
         }
-        /* 进度条 */
+        setInterval(syncCap, 300);
         (function frame() {
             var p = ((new Date()).getTime() - t0) / TOTAL;
             if (barEl) barEl.style.width = Math.min(100, p * 100) + '%';
             if (p < 1.02) requestAnimationFrame(frame);
         })();
-        log('演示开始，共 ' + TL.length + ' 个步骤');
+        log('演示开始，' + TL.length + ' 步');
     }
 
     function boot() {
@@ -14810,16 +14928,19 @@ if (document.readyState === 'loading') {
         barEl = document.getElementById('promoBar');
         startEl = document.getElementById('promoStart');
         endEl = document.getElementById('promoEnd');
+        scrimBot = document.getElementById('promoScrimBot');
+        scrimTop = document.getElementById('promoScrimTop');
+        placeCap('bot');
+        window.addEventListener('resize', function () { placeCap(capSideNow); }, false);
         build();
         if (AUTO) { setTimeout(run, 300); return; }
         if (startEl) {
             startEl.addEventListener('click', function () {
-                /* 全屏必须有用户手势，这一下正好把两件事一起做了 */
                 try {
                     var d = document.documentElement;
-                    var rf = d.requestFullscreen || d.webkitRequestFullscreen || d.webkitRequestFullScreen;
+                    var rf = d.requestFullscreen || d.webkitRequestFullscreen;
                     if (rf) rf.call(d);
-                } catch (e) { log('全屏失败: ' + e.message); }
+                } catch (e) { log('全屏失败'); }
                 startEl.className = 'gone';
                 setTimeout(run, 260);
             }, false);
