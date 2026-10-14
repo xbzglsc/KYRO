@@ -4062,7 +4062,7 @@ html.theme-light .settings-tagline {
 
             <div class="form-group">
                 <label>API Key</label>
-                <input type="password" id="cfgKey" placeholder="sk-...">
+                <input type="text" id="cfgKey" placeholder="sk-...">
                 <button type="button" class="balance-check-btn" id="checkBalanceBtn">检查账户余额</button>
                 <div class="balance-result" id="balanceResult"></div>
             </div>
@@ -14697,7 +14697,7 @@ html.theme-light #promoCap span {
 .promo-end-sub { font-size: 12px; letter-spacing: 4px; color: rgba(20, 20, 40, 0.38); padding-left: 4px; }
 
 </style>
-<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示 · 自动进入全屏</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
+<div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
 <script id="promoScript">
 /* ===== KYRO 宣传演示时间轴 v3（约 92 秒）===== */
 (function () {
@@ -14792,19 +14792,37 @@ html.theme-light #promoCap span {
         } catch (e) {}
     }
     function fakePill() {
+        /* 只改界面显示，不动 appState —— 避免把演示用的假值写进用户配置 */
         try {
-            if (window.appState && appState.config) {
-                if (!appState.config.apiKey) appState.config.apiKey = 'sk-demo-00000000000000000000';
-                appState.config.model = 'deepseekv4.1flash';
+            if (window.appState && appState.config && !appState.config.apiKey) {
+                appState.config.apiKey = 'sk-demo-00000000000000000000';
             }
         } catch (e) {}
         applyPill();
         if (!pillTimer) pillTimer = setInterval(applyPill, 400);
     }
+    /* ★ 演示全程不弹键盘；并且把 API Key 输入框换成假值，
+       避免把用户真实的 Key 录进视频（只改 DOM，不派发事件、不写回配置） */
+    var kbTimer = null;
+    function keepKeyboardDown() {
+        try {
+            var a = document.activeElement;
+            if (a) {
+                var t = (a.tagName || '').toLowerCase();
+                if (t === 'input' || t === 'textarea') a.blur();
+            }
+            var k = document.getElementById('cfgKey');
+            if (k && k.value && k.value.indexOf('sk-kyro-demo') !== 0) {
+                k.value = 'sk-kyro-demo-0000000000';
+            } else if (k && !k.value) {
+                k.value = 'sk-kyro-demo-0000000000';
+            }
+        } catch (e) {}
+    }
     function typeComposer(text) {
         var el = document.getElementById('chatInput');
         if (!el) return;
-        el.focus();
+        /* ★ 不调用 focus()：一聚焦系统就弹软键盘，录进视频很难看 */
         var i = 0;
         (function tick() {
             if (i > text.length) return;
@@ -14962,6 +14980,8 @@ html.theme-light #promoCap span {
         }
         setInterval(syncCap, 300);
         setInterval(stateLoop, 250);
+        if (!kbTimer) kbTimer = setInterval(keepKeyboardDown, 300);   /* ★ 全程压住键盘 */
+        keepKeyboardDown();
         (function frame() {
             var p = ((new Date()).getTime() - t0) / TOTAL;
             if (barEl) barEl.style.width = Math.min(100, p * 100) + '%';
@@ -14983,11 +15003,8 @@ html.theme-light #promoCap span {
         if (AUTO) { setTimeout(run, 300); return; }
         if (startEl) {
             startEl.addEventListener('click', function () {
-                try {
-                    var d = document.documentElement;
-                    var rf = d.requestFullscreen || d.webkitRequestFullscreen;
-                    if (rf) rf.call(d);
-                } catch (e) { log('全屏失败'); }
+                /* ★ 不再请求全屏：部分机型（如小米）进入全屏后会被系统自动旋转成横屏。
+                   想画面更干净，用"添加到主屏幕"打开即可。 */
                 startEl.className = 'gone';
                 setTimeout(run, 260);
             }, false);
