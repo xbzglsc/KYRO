@@ -14648,9 +14648,24 @@ if (document.readyState === 'loading') {
     text-align: center;
     font-size: 16px; font-weight: 500; letter-spacing: 1.2px;
     line-height: 1.6;
-    color: #ffffff;
+    color: #ffffff;                       /* 深色主题：白字 */
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55);
     max-width: 92vw;
+    -webkit-transition: color 0.35s ease;
+    transition: color 0.35s ease;
+}
+/* ★ 浅色主题：底色换白、字换黑 */
+html.theme-light #promoScrimBot {
+    background-image: -webkit-linear-gradient(bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+}
+html.theme-light #promoScrimTop {
+    background-image: -webkit-linear-gradient(top, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+    background-image: linear-gradient(to bottom, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.66) 46%, rgba(255,255,255,0) 100%);
+}
+html.theme-light #promoCap span {
+    color: #101014;
+    text-shadow: 0 1px 6px rgba(255, 255, 255, 0.7);
 }
 
 /* 顶部进度 */
@@ -14683,15 +14698,15 @@ if (document.readyState === 'loading') {
 </style>
 <div id="promoStart"><div class="promo-start-logo"><img src="assets/icon-180.png" alt="KYRO"></div><div class="promo-start-title">KYRO</div><div class="promo-start-sub">一眼洞悉，万语千言<br>点击开始演示 · 自动进入全屏</div><div class="promo-start-btn">开始演示</div></div><div id="promoScrimBot"></div><div id="promoScrimTop"></div><div id="promoBar"></div><div id="promoCap"><span></span></div><div id="promoEnd"><div class="promo-end-title">KYRO</div><div class="promo-end-sub">一眼洞悉 · 万语千言</div></div>
 <script id="promoScript">
-/* ===== KYRO 宣传演示时间轴 v2（约 62 秒）===== */
+/* ===== KYRO 宣传演示时间轴 v3（约 92 秒）===== */
 (function () {
     var AUTO = /[?&]auto=1/.test(location.search);
-    var started = false;
-    var TL = [];
-    var t0 = 0;
+    var started = false, phase = 'intro', forceTop = false;
+    var TL = [], t0 = 0;
     var capEl, barEl, startEl, endEl, scrimBot, scrimTop;
-    var TOTAL = 88000;
+    var TOTAL = 93000;
     var capSideNow = 'bot';
+    var lastStep = -1, finishDone = false;
 
     function log(m) { try { console.log('[promo] ' + m); } catch (e) {} }
     function at(ms, fn, name) { TL.push({ ms: ms, fn: fn, name: name || '' }); }
@@ -14702,9 +14717,8 @@ if (document.readyState === 'loading') {
         };
     }
 
-    /* ---------- 字幕：位置只用 transform 表达，所以能平滑滑过去 ---------- */
+    /* ---------- 字幕 ---------- */
     function capHeight() { return capEl ? (capEl.offsetHeight || 60) : 60; }
-
     function placeCap(side) {
         if (!capEl) return;
         capSideNow = side;
@@ -14715,9 +14729,9 @@ if (document.readyState === 'loading') {
         if (scrimBot) scrimBot.className = (side === 'bot') ? 'on' : '';
         if (scrimTop) scrimTop.className = (side === 'top') ? 'on' : '';
     }
-
-    /* 只有气泡真的压到"底部字幕带"时才让位；没有气泡就老实待在底部 */
+    /* 气泡压到底部字幕带时让位；打字/流式阶段强制置顶 */
     function wantSide() {
+        if (forceTop) return 'top';
         try {
             var tip = document.getElementById('obTip');
             if (!tip) return 'bot';
@@ -14730,14 +14744,12 @@ if (document.readyState === 'loading') {
             return 'bot';
         } catch (e) { return 'bot'; }
     }
-
     function syncCap() {
         if (!capEl || capEl.className.indexOf('on') === -1) return;
         var s = wantSide();
         if (s !== capSideNow) placeCap(s);
-        else if (capSideNow === 'bot') placeCap('bot');   /* 尺寸/换行变化时重新贴底 */
+        else if (!forceTop) placeCap(s);
     }
-
     function showCap(text) {
         if (!capEl) return;
         var sp = capEl.querySelector('span');
@@ -14751,17 +14763,10 @@ if (document.readyState === 'loading') {
         if (scrimTop) scrimTop.className = '';
     }
 
-    /* ---------- 小工具 ---------- */
-    function tap(x, y) {
-        var api = window.__kyroWelcome;
-        if (api && api.tap) { api.tap(x, y); return true; }
-        return false;
-    }
-    function clickTheme(v) {
-        var b = document.querySelector('.theme-seg-btn[data-theme="' + v + '"]');
-        if (b) b.click();
-    }
-    /* 右上角状态胶囊：从"未配置 Key"变成模型名 */
+    /* ---------- 工具 ---------- */
+    function tap(x, y) { var a = window.__kyroWelcome; if (a && a.tap) { a.tap(x, y); return true; } return false; }
+    function clickTheme(v) { var b = document.querySelector('.theme-seg-btn[data-theme="' + v + '"]'); if (b) b.click(); }
+
     var pillTimer = null;
     function applyPill() {
         try {
@@ -14775,7 +14780,7 @@ if (document.readyState === 'loading') {
         try {
             if (window.appState && appState.config) {
                 if (!appState.config.apiKey) appState.config.apiKey = 'sk-demo-00000000000000000000';
-                appState.config.model = 'deepseek-chat';
+                appState.config.model = 'deepseekv4.1flash';
             }
         } catch (e) {}
         applyPill();
@@ -14794,8 +14799,8 @@ if (document.readyState === 'loading') {
             setTimeout(tick, 135);
         })();
     }
-    /* 假流式回复：整列只渲染一次，之后只改最后一个气泡的文字 ——
-       之前每帧 renderMessages() 会把整列 innerHTML 清空重建，所以一直闪屏。 */
+    /* 假流式：整列只重建一次，之后只改气泡文字（避免闪屏）；
+       节奏对齐真实生成 —— 28ms/字 ≈ 36 字/秒 */
     function fakeReply() {
         try {
             if (typeof getCurrentConv !== 'function') return;
@@ -14807,12 +14812,12 @@ if (document.readyState === 'loading') {
             if (el) { el.value = ''; try { el.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
             conv.messages.push({ role: 'user', content: ask });
             var full = '好的，我按「本周进展 / 关键指标 / 下周计划」三块整理：\n\n' +
-                       '1. 本周进展：完成客户端打包与分发链路，下载入口已上线。\n' +
+                       '1. 本周进展：完成客户端打包与分发包链路，下载入口已上线。\n' +
                        '2. 关键指标：首屏 0.8s，流式首字平均 0.4s。\n' +
                        '3. 下周计划：接入更多模型，补齐语音朗读音色。';
             var msg = { role: 'assistant', content: '' };
             conv.messages.push(msg);
-            renderMessages(true);                    /* 只在这里重建一次 */
+            renderMessages(true);
             setTimeout(function () {
                 var bubble = null;
                 try {
@@ -14827,11 +14832,43 @@ if (document.readyState === 'loading') {
                 var timer = setInterval(function () {
                     i += 1;
                     msg.content = full.slice(0, i);
-                    bubble.textContent = msg.content;   /* 只改文字 → 不闪 */
+                    bubble.textContent = msg.content;
                     if (i >= full.length) clearInterval(timer);
-                }, 42);
-            }, 140);
+                }, 28);
+            }, 160);
         } catch (e) { log('假回复失败: ' + e.message); }
+    }
+
+    /* ---------- 引导字幕：按真实 step 走，保证与画面同步 ---------- */
+    var guideCaps = {
+        0: '顶栏：切换模型 · 新建对话',
+        2: '输入即发送，回车即可',
+        3: '会话列表，每个会话独立角色',
+        4: '设置：账户 · 配置 · 导出',
+        6: 'AI 配置：任意兼容 OpenAI 的模型',
+        7: '语音朗读：边听边想',
+        8: '聊天记录导出与导入',
+        10: '剩下的交给你自己探索'
+    };
+    function stateLoop() {
+        if (!started || phase !== 'guide') return;
+        try {
+            var ob = window.__kyroOB;
+            var s = (ob && ob.step) ? ob.step() : -1;
+            if (s >= 0 && s !== lastStep) {
+                lastStep = s;
+                if (guideCaps[s]) showCap(guideCaps[s]);
+            }
+            var f = document.getElementById('obFinish');
+            if (f && f.className.indexOf('show') !== -1 && !finishDone) {
+                finishDone = true;
+                showCap('填个 API Key 就能开始');          /* 卡片真出现了才切字幕 */
+                setTimeout(function () {
+                    var b = document.getElementById('obFinishBtn');
+                    if (b) b.click();
+                }, 2600);
+            }
+        } catch (e) {}
     }
 
     /* ---------- 时间轴 ---------- */
@@ -14839,30 +14876,20 @@ if (document.readyState === 'loading') {
         var w = window.innerWidth, h = window.innerHeight;
         var cx = Math.round(w * 0.5), cy = Math.round(h * 0.6);
 
-        /* 开局统一成深色（否则会跟着手机当前主题走，录出来不一致） */
-        at(120, safe(function () { if (typeof setTheme === 'function') setTheme('dark'); }, '起始深色'), 'dark0');
+        /* ★ 统一从浅色开始（跟着手机当前主题走会不一致） */
+        at(120, safe(function () { if (typeof setTheme === 'function') setTheme('light'); }, '起始浅色'), 'light0');
         cap(0, 'KYRO · 一眼洞悉，万语千言');
-        at(1800, safe(function () { tap(cx, cy); }, '门槛'), '门槛');
+        at(1800, safe(function () { tap(cx, cy); }, '门槛'), 'gate');
 
         cap(8000, '双击屏幕，从涟漪中央进入');
-        at(8800, safe(function () { tap(cx, cy - 20); tap(cx + 6, cy); }, '双击'), '双击');
+        at(8800, safe(function () { tap(cx, cy - 20); tap(cx + 6, cy); }, '双击'), 'dbl');
 
         cap(12500, '30 秒带你逛一遍常用功能');
-        at(14500, safe(function () { var ob = window.__kyroOB; if (ob) ob.begin(); }, 'begin'), 'begin');
+        at(14500, safe(function () { phase = 'guide'; var ob = window.__kyroOB; if (ob) ob.begin(); }, 'begin'), 'begin');
 
-        var stepCaps = {
-            0: '顶栏：切换模型 · 新建对话',
-            2: '输入即发送，回车即可',
-            3: '会话列表，每个会话独立角色',
-            4: '设置：账户 · 配置 · 导出',
-            6: 'AI 配置：任意兼容 OpenAI 的模型',
-            7: '语音朗读：边听边想',
-            8: '聊天记录导出与导入',
-            10: '剩下的交给你自己探索'
-        };
-        for (var i = 0; i < 11; i++) {
+        /* ★ 要 12 次：第 11 次才是"在最后一步再点一次"→ 触发收尾卡片 */
+        for (var i = 0; i < 12; i++) {
             (function (idx, when) {
-                if (stepCaps[idx]) cap(when - 240, stepCaps[idx]);
                 at(when, safe(function () {
                     var ob = window.__kyroOB;
                     if (!ob || idx === 0) return;
@@ -14872,39 +14899,41 @@ if (document.readyState === 'loading') {
             })(i, 16000 + i * 2000);
         }
 
-        cap(38500, '填个 API Key 就能开始');
-        at(40600, safe(function () { var b = document.getElementById('obFinishBtn'); if (b) b.click(); }, '去填写'), 'finish');
-        cap(41900, 'AI 配置：接口地址 · API Key · 模型列表 · 角色设定');
+        /* 收尾后的设置子页 */
+        at(43000, safe(function () { showSettingsPage('tts'); }, 'tts'), 'tts');
+        cap(43200, '语音朗读 TTS：多种音色与语速');
+        at(46000, safe(function () { showSettingsPage('export'); }, 'export'), 'export');
+        cap(46200, '聊天记录导出 / 导入，随时备份');
+        at(49500, safe(function () { showSettingsPage('main'); }, 'main'), 'main');
+        cap(49700, '云端同步，多设备接续');
 
-        at(45200, safe(function () { showSettingsPage('tts'); }, 'tts'), 'tts');
-        cap(45300, '语音朗读 TTS：多种音色与语速');
-        at(48600, safe(function () { showSettingsPage('export'); }, 'export'), 'export');
-        cap(48700, '聊天记录导出 / 导入，随时备份');
-        at(52000, safe(function () { showSettingsPage('main'); }, 'main'), 'main');
-        cap(52100, '云端同步，多设备接续');
-
-        /* ★ 主题切换演示 */
-        cap(55400, '深色 / 浅色 / 跟随系统，一键切换');
-        at(56600, safe(function () { clickTheme('light'); }, '浅色'), 'light');
+        /* ★ 主题演示：深色 → 聊天页 → 会话列表 → 回设置 → 切回浅色 */
+        cap(52500, '深色 / 浅色 / 跟随系统，一键切换');
+        at(53800, safe(function () { phase = 'theme'; clickTheme('dark'); }, '深色'), 'dark');
+        cap(54300, '先切成深色');
+        at(57000, safe(function () { closeSettingsModal(); }, '关设置'), 'close1');
         cap(57500, '整屏实时切换，不只是换个配色');
-        at(61500, safe(function () { clickTheme('dark'); }, '深色'), 'dark');
-        cap(62100, '深色模式：深夜看着不刺眼');
+        at(60500, safe(function () { if (typeof toggleSidebar === 'function') toggleSidebar(); }, '开侧栏'), 'sbopen');
+        cap(61000, '会话列表也跟着一起切');
+        at(64000, safe(function () { if (typeof toggleSidebar === 'function') toggleSidebar(); }, '关侧栏'), 'sbclose');
+        at(66500, safe(function () { if (typeof openSettingsModal === 'function') openSettingsModal(); }, '回设置'), 'open2');
+        cap(66900, '回到设置，切回浅色');
+        at(68800, safe(function () { clickTheme('light'); }, '浅色'), 'light');
+        cap(69300, '习惯浅色？一键切回');
+        at(71500, safe(function () { closeSettingsModal(); }, '关设置2'), 'close2');
+        cap(72000, '直接开始对话');
 
-        at(65500, safe(function () { closeSettingsModal(); }, '关设置'), 'close');
-        cap(65900, '直接开始对话');
+        /* ★ 假模型 + 假流式回复（字幕置顶，别挡对话） */
+        at(73500, safe(function () { phase = 'reply'; forceTop = true; fakePill(); }, '假模型'), 'pill');
+        cap(73900, '选好模型，直接提问');
+        at(75200, safe(function () { typeComposer('帮我把这段需求整理成一份周报'); }, '打字'), 'typing');
+        at(78800, safe(fakeReply, '假回复'), 'reply');
+        cap(79200, '流式回复，边生成边看');
 
-        /* ★ 假模型 + 假流式回复 */
-        at(68200, safe(fakePill, '假模型'), 'pill');
-        cap(68600, '选好模型，直接提问');
-        at(70000, safe(function () { typeComposer('帮我把这段需求整理成一份周报'); }, '打字'), 'typing');
-        at(75500, safe(fakeReply, '假回复'), 'reply');
-        cap(76200, '流式回复，边生成边看');
-
-        at(85000, function () { hideCap(); }, 'hidecap');
-        at(85800, function () { if (endEl) endEl.className = 'on'; }, 'end');
+        at(90000, function () { forceTop = false; hideCap(); }, 'hidecap');
+        at(91000, function () { if (endEl) endEl.className = 'on'; }, 'end');
     }
 
-    /* ---------- 运行 ---------- */
     function run() {
         if (started) return;
         started = true;
@@ -14915,6 +14944,7 @@ if (document.readyState === 'loading') {
             (function (item) { setTimeout(item.fn, item.ms); })(TL[i]);
         }
         setInterval(syncCap, 300);
+        setInterval(stateLoop, 250);
         (function frame() {
             var p = ((new Date()).getTime() - t0) / TOTAL;
             if (barEl) barEl.style.width = Math.min(100, p * 100) + '%';
