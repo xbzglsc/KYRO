@@ -3872,9 +3872,18 @@ html.theme-light .settings-tagline {
                 <div class="tip">格式：{ "语言代码": { "原文": "译文" } }。键写界面上的原文，值写想显示的文字；没写的保持原文。</div>
             </div>
 
+            <div class="form-group" style="margin-top:16px;">
+                <label>更多语言 / More languages</label>
+                <select id="i18nMore" style="width:100%;box-sizing:border-box;padding:11px 12px;border-radius:10px;font-family:inherit;font-size:13px;border:1px solid rgba(128,128,148,0.28);background-color:rgba(128,128,148,0.10);color:inherit;"></select>
+                <div class="tip">选中即切换。没有内置词典的语言，可在下方逐条填写译文（点「生成模板」一键列出全部原文）。</div>
+            </div>
+
             <div class="i18n-actions">
                 <button type="button" class="i18n-btn primary" id="i18nSave">保存</button>
                 <button type="button" class="i18n-btn ghost" id="i18nReset">恢复默认</button>
+            </div>
+            <div class="i18n-actions" style="margin-top:8px;">
+                <button type="button" class="i18n-btn ghost" id="i18nTpl">生成模板（列出全部原文）</button>
             </div>
         </div>        <div class="settings-page" id="settingsPageTts" data-page="tts">
             <div class="submenu-title" style="margin:2px 0 10px;color:#A695FF;letter-spacing:0.5px;font-size:0.933em;">MiMo 语音合成（推荐）</div>
@@ -14718,6 +14727,61 @@ if (document.readyState === 'loading') {
             '探测中…（智谱 3 个通道）': 'Probing… (3 Zhipu channels)',
             '在顶栏显示联网开关（需服务商支持）': 'Show a web-search toggle in the top bar (if supported)',
             '十六进制串（避免误吃': 'Hex string (avoids confusing',
+            '"真实花费 = 充值总额 − 当前余额"。点上方"检查账户余额"刷新': 'Real spend = top-ups − current balance. Tap "Check balance" above to refresh.',
+            '0 ~ 2，默认 1': '0–2, default 1',
+            '0.5 ~ 2，默认 1': '0.5–2, default 1',
+            'API 地址必须以 http:// 或 https:// 开头': 'The API URL must start with http:// or https://',
+            '必须以 http:// 或 https:// 开头': 'Must start with http:// or https://',
+            'MiMo Key 无效或认证方式不对（可到设置里把认证方式切成 Bearer 试试）': 'MiMo key invalid or wrong auth method (try switching to Bearer in settings)',
+            '仅在没填 MiMo Key 时生效，用的是系统/浏览器的语音引擎。': 'Only applies when no MiMo key is set — uses the system/browser speech engine.',
+            '从云端拉取会与本地合并（按时间戳保留最新），确定继续吗？': 'Pulling from the cloud merges with local data (newest wins by timestamp). Continue?',
+            '作为一条 user 消息发给 TTS 模型，用来控制语气风格。': 'Sent as a user message to the TTS model to control tone and style.',
+            '作为所有会话的默认角色设定。单个会话可点击顶栏「角色」按钮单独覆盖。此内容也会同步到云端。': 'Default role for every chat. Override per chat via the "Role" button in the top bar. Synced to the cloud.',
+            '导出为 .txt 纯文本，只含用户与 AI 的对话内容。导入请到主设置菜单的"导入聊天记录"。': 'Exported as plain .txt with only your conversation. To import, use "Import chats" in the main settings menu.',
+            '将本机所有会话和配置上传到云端？同名会被覆盖（以本机为准）。': 'Upload all local chats and config to the cloud? Same-named items are overwritten (local wins).',
+            '开启：发送第一条消息后用 AI 生成简短标题；关闭：默认用第一句话作为标题': 'On: AI generates a short title after your first message. Off: the first sentence becomes the title.',
+            '开启：实时显示加粗/公式（较慢）；关闭：先纯文本显示，完成后渲染（更快，推荐老设备关闭）': 'On: render bold and formulas live (slower). Off: plain text first, then render (faster; recommended off on older devices).',
+            '当前浏览器不支持语音朗读，请到设置里配置 TTS 服务': 'This browser does not support speech — configure a TTS service in settings.',
+            '确定要停止生成吗？': 'Stop generating?',
+            '确定要删除这个对话吗？此操作不可撤销。': 'Delete this chat? This cannot be undone.',
+            '确定退出登录吗？退出后数据仍保留在本机，但不会再自动同步到云端。': 'Sign out? Your data stays on this device but will no longer sync to the cloud.',
+            '格式错误：不是本应用导出的文件（缺少【会话】标题）': 'Bad format: not a file exported by this app (missing the [chat] header).',
+            '格式错误：文件中没有任何对话内容': 'Bad format: the file contains no conversations.',
+            '格式错误：未能从文件中解析出任何会话': 'Bad format: no conversations could be parsed from the file.',
+            '格式：{ "语言代码": { "原文": "译文" } }。键写界面上的原文，值写想显示的文字；没写的保持原文。': 'Format: keys are the original on-screen text, values are what you want shown; anything omitted stays as-is.',
+            '每行：模型 ID（发给 API 的 model 参数） · 输入价 / 输出价。': 'One per line: model ID (the API "model" value) · input / output price.',
+            '自动按 token 粗算截断，超出会从最早的消息开始丢弃': 'Automatically trimmed by rough token count — oldest messages are dropped first.',
+            '调整整个网站的文字大小（含会话列表），立即生效。选择"自定义"可输入 10~32 之间的任意值。': 'Adjusts text size everywhere (including the chat list) instantly. Choose "Custom" for any value from 10 to 32.',
+            '顶栏与会话列表整体向下移动 26dp，避开刘海 / 挖孔 / 状态栏；底部输入区自动避开手势条': 'Moves the top bar and chat list down 26dp to clear notches and the status bar; the composer avoids the gesture bar.',
+            '没有可朗读的内容': 'Nothing to read aloud',
+            '没有可用的视觉模型': 'No vision model available',
+            '没有当前会话': 'No current chat',
+            '正在合成…': 'Synthesising…',
+            '正在识别文档内嵌图片文字（共': 'Reading text from embedded images (total',
+            '正在识别第': 'Reading image',
+            '正在压缩图片 (': 'Compressing image (',
+            '文件正在读取中，请稍候': 'Reading the file, please wait',
+            '文件超过': 'File exceeds',
+            '图片超过': 'Image exceeds',
+            '合成失败：HTTP': 'Synthesis failed: HTTP',
+            '合成失败：空音频': 'Synthesis failed: empty audio',
+            '合成超时': 'Synthesis timed out',
+            '音频解析失败': 'Failed to parse audio',
+            '会话数量已达': 'Chat limit reached:',
+            '已达上限：图片最多': 'Limit reached: at most',
+            '已修改标题': 'Title updated',
+            '已切换到第': 'Switched to',
+            '已在其他设备删除': 'Deleted on another device',
+            '已在其他设备删除:': 'Deleted on another device:',
+            '已提交上传，请稍候': 'Uploading, please wait',
+            '已是全局设定': 'Already using the global role',
+            '已添加': 'Added',
+            '已经是最新对话了': 'Already the latest chat',
+            '找不到本轮的用户消息': 'Could not find this turn\'s user message',
+            '普通 API Key 用': 'Use a regular API key for',
+            '· 只对': '· only for',
+            '已恢复为全局角色设定': 'Back to the global role',
+            '数据仅保存在本机浏览器': 'Data stays in this browser',
         }
     };
 
@@ -14756,6 +14820,14 @@ if (document.readyState === 'loading') {
     }
 
     /* ---------- DOM 翻译 ---------- */
+    /* 可选语言（带内置词典的会自动生效，其余可用自定义译文填充） */
+    var LANGS = [
+        ['zh-CN', '简体中文'], ['zh-TW', '繁體中文'], ['en', 'English'],
+        ['ja', '日本語'], ['ko', '한국어'], ['es', 'Español'], ['fr', 'Français'],
+        ['de', 'Deutsch'], ['pt', 'Português'], ['ru', 'Русский'], ['it', 'Italiano'],
+        ['th', 'ไทย'], ['vi', 'Tiếng Việt'], ['id', 'Bahasa Indonesia'],
+        ['ms', 'Bahasa Melayu'], ['tr', 'Türkçe'], ['ar', 'العربية'], ['hi', 'हिन्दी']
+    ];
     var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
     /* ★ 把原文记在节点上（__o / __ph / __ti），因此切换语言可以来回恢复，
        不会出现"切回中文还留着英文"的问题。 */
@@ -14807,11 +14879,22 @@ if (document.readyState === 'loading') {
             var on = btns[i].getAttribute('data-lang') === v;
             btns[i].className = 'i18n-seg-btn' + (on ? ' on' : '');
         }
+        var lg = currentLang();
+        var sel = document.getElementById('i18nMore');
+        if (sel) {
+            var found = false;
+            for (var j = 0; j < sel.options.length; j++) {
+                if (sel.options[j].value === lg) { sel.selectedIndex = j; found = true; break; }
+            }
+            if (!found) sel.selectedIndex = 0;
+        }
         var hint = document.getElementById('i18nHint');
         if (hint) {
-            hint.textContent = '当前生效：' + currentLang() +
-                '（选择"跟随系统"时由浏览器语言决定，本机为 ' +
-                (navigator.language || '未知') + '）';
+            var builtin = !!BASE[lg];
+            hint.textContent = '当前生效：' + lg +
+                (storedLang() === 'auto' ? '（跟随系统，本机 ' + (navigator.language || '?') + '）' : '') +
+                (builtin ? ' · 内置词典已就绪'
+                         : ' · 暂无内置词典，可在下方自行填写（点「生成模板」）');
         }
         var ed = document.getElementById('i18nEditor');
         if (ed && !ed.__dirty) {
@@ -14875,6 +14958,34 @@ if (document.readyState === 'loading') {
         }
         var ed2 = document.getElementById('i18nEditor');
         if (ed2) ed2.oninput = function () { ed2.__dirty = true; };
+        var sel = document.getElementById('i18nMore');
+        if (sel) {
+            sel.innerHTML = '';
+            for (var i = 0; i < LANGS.length; i++) {
+                var o = document.createElement('option');
+                o.value = LANGS[i][0];
+                o.textContent = LANGS[i][1] + '  ·  ' + LANGS[i][0];
+                sel.appendChild(o);
+            }
+            sel.onchange = function () { writeLS(LANG_KEY, sel.value); applyLang(); };
+        }
+        var tpl = document.getElementById('i18nTpl');
+        if (tpl) {
+            tpl.onclick = function () {
+                var lg = currentLang();
+                var cur = customDict()[lg] || {};
+                var t = {}; t[lg] = {};
+                var keys = [], k;
+                var base = BASE['en'] || {};
+                for (k in base) if (base.hasOwnProperty(k)) keys.push(k);
+                keys.sort();
+                for (var i = 0; i < keys.length; i++) t[lg][keys[i]] = cur[keys[i]] || '';
+                var ed3 = document.getElementById('i18nEditor');
+                ed3.value = JSON.stringify(t, null, 1);
+                ed3.__dirty = true;
+                if (typeof showToast === 'function') showToast('已生成模板，共 ' + keys.length + ' 条');
+            };
+        }
     }
 
     /* ---------- 动态内容 ---------- */
