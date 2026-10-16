@@ -43,7 +43,7 @@
 </script>
 <style>
 /* ============================================================================
-   ★ 本样式表由原先 10 个 <style> 块按原顺序合并而成（含各种"修复层"）。
+   ★ 本样式表由原先 11 个 <style> 块按原顺序合并而成（含各种"修复层"）。
    合并只去掉外壳、不改任何规则、也不改顺序，因此层叠结果与原来完全一致。
    其中仍然存在的 !important 覆盖是刻意保留的兼容层，不是漏改。
    ============================================================================ */
@@ -3140,6 +3140,40 @@ html.theme-light .onboarding-ask-btn.no:active { background-color: rgba(20, 20, 
 @media (max-width: 480px) {
     .onboarding-ask { width: calc(100vw - 48px); margin-left: calc((100vw - 48px) / -2); }
 }
+/* ===== 多语言：分段选择 + 自定义编辑器 ===== */
+.i18n-seg {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    margin: 12px 0 6px; padding: 3px;
+    background-color: rgba(128, 128, 148, 0.16);
+    border-radius: 11px;
+}
+.i18n-seg-btn {
+    -webkit-box-flex: 1; -webkit-flex: 1 1 0; flex: 1 1 0;
+    min-width: 0; border: 0; cursor: pointer;
+    background-color: transparent; font-family: inherit;
+    font-size: 13px; color: #ffffff; padding: 9px 4px; border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+}
+.i18n-seg-btn.on { background-color: #5B3DF5; color: #ffffff; }
+html.theme-light .i18n-seg-btn { color: rgba(20, 20, 40, 0.66); }
+html.theme-light .i18n-seg-btn.on { color: #ffffff; }
+.i18n-actions { display: -webkit-box; display: -webkit-flex; display: flex; margin-top: 14px; }
+.i18n-btn {
+    -webkit-box-flex: 1; -webkit-flex: 1 1 0; flex: 1 1 0; min-width: 0;
+    border: 0; cursor: pointer; font-family: inherit; font-size: 13px;
+    padding: 12px 6px; border-radius: 10px; letter-spacing: 1px;
+    -webkit-tap-highlight-color: transparent;
+}
+.i18n-btn.primary { background-color: #5B3DF5; color: #ffffff; margin-right: 8px; }
+.i18n-btn.ghost { background-color: rgba(128, 128, 148, 0.18); color: #ffffff; }
+html.theme-light .i18n-btn.ghost { color: rgba(20, 20, 40, 0.82); }
+#i18nEditor {
+    width: 100%; box-sizing: border-box; resize: vertical;
+    font-family: Menlo, Consolas, monospace; font-size: 12px; line-height: 1.6;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid rgba(128, 128, 148, 0.28);
+    background-color: rgba(128, 128, 148, 0.10); color: inherit;
+}
 /* ===== 悬浮跳转按钮（回到顶部 / 跳到底部） =====   纯黑白灰，不掺品牌色。   深色下用中性深灰底 + 白箭头：比原来的 51% 灰暗一档，   落在主题的暗部明度带里，配一道细白描边和柔和投影拉开层次。 */
 .sjump-btn{
  position:fixed;
@@ -3326,6 +3360,7 @@ html.theme-light .settings-tagline {
 
 <link rel="icon" type="image/png" sizes="64x64" href="assets/icon-64.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+
 
 
 
@@ -3670,7 +3705,11 @@ html.theme-light .settings-tagline {
                 </div>
             </div>
 
-<!-- 自动模式依据：跟随系统 / 按时间 -->
+            <!-- ★ 多语言入口 -->
+            <div class="submenu-entry" id="langEntry">
+                <span class="submenu-title">语言 / Language</span>
+                <span class="submenu-arrow">›</span>
+            </div><!-- 自动模式依据：跟随系统 / 按时间 -->
 <div class="toggle-group toggle-stack" id="autoModeRow" style="display:none;">
     <div class="toggle-label">
         <div class="toggle-title">自动模式依据</div>
@@ -3816,7 +3855,28 @@ html.theme-light .settings-tagline {
             </div>
         </div>
 
-        <div class="settings-page" id="settingsPageTts" data-page="tts">
+        <div class="settings-page" id="settingsPageLang" data-page="lang">
+            <div class="submenu-title" style="margin-bottom:6px;">语言 / Language</div>
+            <div class="toggle-desc">默认跟随系统语言；也可手动固定，翻译随时可以自行修改。</div>
+
+            <div class="i18n-seg" id="i18nSeg">
+                <button type="button" class="i18n-seg-btn" data-lang="auto">跟随系统</button>
+                <button type="button" class="i18n-seg-btn" data-lang="zh-CN">简体中文</button>
+                <button type="button" class="i18n-seg-btn" data-lang="en">English</button>
+            </div>
+            <div class="tip" id="i18nHint" style="margin-top:8px;"></div>
+
+            <div class="form-group" style="margin-top:18px;">
+                <label>自定义翻译（JSON，可自行修改 / 补充）</label>
+                <textarea id="i18nEditor" rows="9" spellcheck="false" placeholder='{ "en": { "新建对话": "New chat" } }'></textarea>
+                <div class="tip">格式：{ "语言代码": { "原文": "译文" } }。键写界面上的原文，值写想显示的文字；没写的保持原文。</div>
+            </div>
+
+            <div class="i18n-actions">
+                <button type="button" class="i18n-btn primary" id="i18nSave">保存</button>
+                <button type="button" class="i18n-btn ghost" id="i18nReset">恢复默认</button>
+            </div>
+        </div>        <div class="settings-page" id="settingsPageTts" data-page="tts">
             <div class="submenu-title" style="margin:2px 0 10px;color:#A695FF;letter-spacing:0.5px;font-size:0.933em;">MiMo 语音合成（推荐）</div>
             <div class="form-group">
                 <label>MiMo API Key</label>
@@ -14248,5 +14308,255 @@ if (document.readyState === 'loading') {
 })();
 </script>
 
+<script id="i18nScript">
+/* ===== 多语言：默认跟随系统，可手动切换，翻译可自行修改 =====
+   实现方式：不改动界面代码，而是按"原文 → 译文"的词典翻译 DOM 文本，
+   并监听动态内容（消息、引导、提示），因此任何新增文字都能被覆盖。 */
+(function () {
+    var LANG_KEY = 'kyro-lang-v1';
+    var CUSTOM_KEY = 'kyro-i18n-custom-v1';
+
+    /* ---------- 内置词典（键 = 界面上的原文） ---------- */
+    var BASE = {
+        'en': {
+            /* 顶栏 / 侧栏 */
+            '新建对话': 'New chat', '设置': 'Settings', '会话列表': 'Chats',
+            '未配置 Key': 'No API key', '角色': 'Role', '清空': 'Clear',
+            '删除': 'Delete', '重命名': 'Rename', '确定': 'OK', '取消': 'Cancel',
+            '保存': 'Save', '复制': 'Copy', '重试': 'Retry', '编辑': 'Edit',
+            '发送': 'Send', '停止': 'Stop', '搜索': 'Search', '返回': 'Back',
+            /* 输入区 */
+            '输入消息…': 'Message…', '发送消息即可': 'Send a message to start',
+            '开始对话': 'Start chatting', '上传图片或文件': 'Attach image or file',
+            /* 欢迎页 / 引导 */
+            '点击以继续': 'Tap to continue', '双击屏幕进入': 'Double-tap to enter',
+            '要不要带你逛一遍？': 'Want a quick tour?',
+            '大约 30 秒，介绍 AI 配置、语音朗读、聊天记录与账号同步这些常用功能。':
+                'About 30 seconds: AI setup, text-to-speech, chat backup and cloud sync.',
+            '跳过也没关系，之后可在「设置 → 重新查看欢迎与新手引导」再看一遍。':
+                'You can skip it and watch again in Settings.',
+            '先不用': 'Not now', '开始引导': 'Start tour', '下一步': 'Next',
+            '跳过': 'Skip', '一切就绪': 'All set', '去填写': 'Continue',
+            '最后一步：填入 API Key，就可以开始对话了。':
+                'One last step: add your API key and start chatting.',
+            /* 设置页 */
+            '主题模式': 'Theme', '深色 / 浅色 / 跟随系统自动切换': 'Dark / Light / Follow system',
+            '浅色': 'Light', '深色': 'Dark', '自动': 'Auto',
+            '语言 / Language': 'Language', '云端账户': 'Account',
+            '未登录': 'Not signed in', '登录': 'Sign in', '退出登录': 'Sign out',
+            '账号与云端同步': 'Account & cloud sync', 'AI 配置': 'AI setup',
+            '语音朗读（TTS）': 'Text-to-speech', '聊天记录导出': 'Export chats',
+            '导入聊天记录': 'Import chats', '重新查看欢迎与新手引导': 'Replay welcome & tour',
+            '下载 KYRO 安卓客户端': 'Download KYRO for Android', '完成': 'Done',
+            '跟随系统': 'Follow system', '自定义翻译（JSON，可自行修改 / 补充）':
+                'Custom translations (JSON)',
+            '恢复默认': 'Reset',
+            /* AI 配置 */
+            'API 地址 (Base URL)': 'API base URL', 'API Key': 'API key',
+            '模型列表（模型 ID · 输入价 / 输出价 ¥/百万 tokens）':
+                'Models (ID · input / output price per 1M tokens)',
+            '已充值总额（¥）': 'Total topped up (CNY)',
+            'AI 角色性格设定（全局 System Prompt）': 'Global system prompt',
+            '检查账户余额': 'Check balance', '添加模型': 'Add model',
+            /* 引导文案 */
+            '顶栏：换模型 · 开新对话': 'Top bar: switch model · new chat',
+            '回车即发，长文也不怕': 'Enter to send',
+            '每个会话，各有各的角色': 'A role for every chat',
+            '账户 · 配置 · 备份': 'Account · setup · backup',
+            '想接哪个模型，你说了算': 'Bring your own model',
+            '语音朗读，闭上眼也能听': 'Listen with your eyes closed',
+            '对话可导出，也可随时迁回': 'Export and restore anytime',
+            '剩下的，交给你慢慢发现': 'The rest is yours to explore',
+            /* 通用提示 */
+            '已复制': 'Copied', '复制成功': 'Copied',
+            '网络错误，请稍后重试': 'Network error, please retry',
+            '尚未配置 API Key': 'API key not set yet', '已保存': 'Saved'
+        }
+    };
+
+    /* ---------- 语言解析 ---------- */
+    function readLS(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function writeLS(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function detectLang() {
+        var n = navigator.language || navigator.userLanguage || 'zh-CN';
+        var l = String(n).toLowerCase();
+        if (l.indexOf('zh') === 0) return 'zh-CN';
+        if (l.indexOf('en') === 0) return 'en';
+        return 'en';
+    }
+    function storedLang() { var v = readLS(LANG_KEY); return v || 'auto'; }
+    function currentLang() { var v = storedLang(); return v === 'auto' ? detectLang() : v; }
+    function customDict() {
+        try { var o = JSON.parse(readLS(CUSTOM_KEY) || '{}'); return (o && typeof o === 'object') ? o : {}; }
+        catch (e) { return {}; }
+    }
+    var _cache = null, _cacheLang = null;
+    function dict() {
+        var lg = currentLang();
+        if (_cache && _cacheLang === lg) return _cache;
+        var d = {}, base = BASE[lg] || {}, k;
+        for (k in base) if (base.hasOwnProperty(k)) d[k] = base[k];
+        var mine = customDict()[lg] || {};
+        for (k in mine) if (mine.hasOwnProperty(k) && typeof mine[k] === 'string') d[k] = mine[k];
+        _cache = d; _cacheLang = lg;
+        return d;
+    }
+    function active() { var d = dict(); for (var k in d) if (d.hasOwnProperty(k)) return true; return false; }
+    function tr(s) {
+        if (!s) return s;
+        var hit = dict()[s];
+        return (typeof hit === 'string' && hit) ? hit : s;
+    }
+
+    /* ---------- DOM 翻译 ---------- */
+    var SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, NOSCRIPT: 1 };
+    /* ★ 把原文记在节点上（__o / __ph / __ti），因此切换语言可以来回恢复，
+       不会出现"切回中文还留着英文"的问题。 */
+    function translateNode(node) {
+        if (!node) return;
+        var t = node.nodeType;
+        if (t === 3) {
+            if (node.__o === undefined) node.__o = node.nodeValue;
+            var raw = node.__o || '';
+            if (!/[\u4e00-\u9fa5]/.test(raw)) return;
+            var s = raw.replace(/^\s+|\s+$/g, '');
+            if (!s) return;
+            var out = tr(s);
+            var want = (out === s) ? raw : raw.replace(s, out);
+            if (node.nodeValue !== want) node.nodeValue = want;
+            return;
+        }
+        if (t !== 1) return;
+        if (node.getAttribute && node.getAttribute('data-i18n-skip') !== null) return;
+        /* ★ 属性先处理：textarea 要被 SKIP（不翻正文），但它的 placeholder 仍要翻译 */
+        if (node.getAttribute) {
+            var ph = node.getAttribute('placeholder');
+            if (ph !== null) {
+                if (node.__ph === undefined) node.__ph = ph;
+                var wantPh = tr(node.__ph);
+                if (ph !== wantPh) node.setAttribute('placeholder', wantPh);
+            }
+            var ti = node.getAttribute('title');
+            if (ti !== null) {
+                if (node.__ti === undefined) node.__ti = ti;
+                var wantTi = tr(node.__ti);
+                if (ti !== wantTi) node.setAttribute('title', wantTi);
+            }
+        }
+        if (SKIP[node.tagName]) return;
+        for (var i = 0; i < node.childNodes.length; i++) translateNode(node.childNodes[i]);
+    }
+    /* ★ 不能因为"当前语言词典为空"就提前返回：
+       否则从英文切回中文时不会把节点还原成原文 */
+    function translateAll() {
+        try { translateNode(document.body); } catch (e) {}
+    }
+
+    /* ---------- 设置页 UI ---------- */
+    function updateUI() {
+        var v = storedLang();
+        var btns = document.querySelectorAll('#i18nSeg .i18n-seg-btn');
+        for (var i = 0; i < btns.length; i++) {
+            var on = btns[i].getAttribute('data-lang') === v;
+            btns[i].className = 'i18n-seg-btn' + (on ? ' on' : '');
+        }
+        var hint = document.getElementById('i18nHint');
+        if (hint) {
+            hint.textContent = '当前生效：' + currentLang() +
+                '（选择"跟随系统"时由浏览器语言决定，本机为 ' +
+                (navigator.language || '未知') + '）';
+        }
+        var ed = document.getElementById('i18nEditor');
+        if (ed && !ed.__dirty) {
+            var c = customDict();
+            ed.value = (function () { try { return JSON.stringify(c, null, 2); } catch (e) { return '{}'; } })();
+            if (!ed.value || ed.value === 'null') ed.value = '{}';
+        }
+    }
+    function applyLang() {
+        _cache = null; _cacheLang = null;
+        try { document.documentElement.setAttribute('lang', currentLang()); } catch (e) {}
+        /* 中文且没有自定义词典时无需做事 */
+        translateAll();
+        updateUI();
+    }
+
+    function bind() {
+        var seg = document.getElementById('i18nSeg');
+        if (seg) {
+            seg.onclick = function (e) {
+                var t = e.target || e.srcElement;
+                var v = t && t.getAttribute && t.getAttribute('data-lang');
+                if (!v) return;
+                writeLS(LANG_KEY, v);
+                applyLang();
+            };
+        }
+        var entry = document.getElementById('langEntry');
+        if (entry) {
+            entry.onclick = function () {
+                if (typeof showSettingsPage === 'function') showSettingsPage('lang');
+                setTimeout(updateUI, 60);
+            };
+        }
+        var save = document.getElementById('i18nSave');
+        if (save) {
+            save.onclick = function () {
+                var ed = document.getElementById('i18nEditor');
+                var obj;
+                try { obj = JSON.parse(ed.value || '{}'); }
+                catch (err) {
+                    if (typeof showToast === 'function') showToast('JSON 格式有误：' + (err && err.message));
+                    return;
+                }
+                if (!obj || typeof obj !== 'object') obj = {};
+                writeLS(CUSTOM_KEY, JSON.stringify(obj));
+                ed.__dirty = false;
+                applyLang();
+                if (typeof showToast === 'function') showToast('已保存自定义翻译');
+            };
+        }
+        var reset = document.getElementById('i18nReset');
+        if (reset) {
+            reset.onclick = function () {
+                writeLS(CUSTOM_KEY, '{}');
+                var ed = document.getElementById('i18nEditor');
+                if (ed) { ed.__dirty = false; ed.value = '{}'; }
+                applyLang();
+                if (typeof showToast === 'function') showToast('已恢复默认翻译');
+            };
+        }
+        var ed2 = document.getElementById('i18nEditor');
+        if (ed2) ed2.oninput = function () { ed2.__dirty = true; };
+    }
+
+    /* ---------- 动态内容 ---------- */
+    function start() {
+        bind();
+        applyLang();
+        if (window.MutationObserver) {
+            var mo = new MutationObserver(function (recs) {
+                if (!active()) return;
+                for (var i = 0; i < recs.length; i++) {
+                    var r = recs[i];
+                    if (r.type === 'characterData') { translateNode(r.target); continue; }
+                    for (var j = 0; j < r.addedNodes.length; j++) translateNode(r.addedNodes[j]);
+                }
+            });
+            try { mo.observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
+        }
+    }
+    if (document.readyState === 'complete') setTimeout(start, 220);
+    else window.addEventListener('load', function () { setTimeout(start, 220); });
+
+    /* 供外部调用（设置页保存后、或需要手动重刷时） */
+    window.__kyroI18N = {
+        lang: currentLang, stored: storedLang, apply: applyLang,
+        setLang: function (v) { writeLS(LANG_KEY, v); applyLang(); },
+        dict: function () { return dict(); },
+        detect: detectLang
+    };
+})();
+</script>
 </body>
 </html>
