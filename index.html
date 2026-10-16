@@ -43,7 +43,7 @@
 </script>
 <style>
 /* ============================================================================
-   ★ 本样式表由原先 11 个 <style> 块按原顺序合并而成（含各种"修复层"）。
+   ★ 本样式表由原先 12 个 <style> 块按原顺序合并而成（含各种"修复层"）。
    合并只去掉外壳、不改任何规则、也不改顺序，因此层叠结果与原来完全一致。
    其中仍然存在的 !important 覆盖是刻意保留的兼容层，不是漏改。
    ============================================================================ */
@@ -3174,6 +3174,43 @@ html.theme-light .i18n-btn.ghost { color: rgba(20, 20, 40, 0.82); }
     border: 1px solid rgba(128, 128, 148, 0.28);
     background-color: rgba(128, 128, 148, 0.10); color: inherit;
 }
+/* ===== 图片缓存 + 预览 ===== */
+.kyro-cached-img {
+    display: block;
+    max-width: 62vw; max-height: 300px;
+    width: auto; height: auto;
+    border-radius: 10px; margin: 6px 0;
+    background-color: rgba(128, 128, 148, 0.12);
+    cursor: zoom-in;
+    -webkit-tap-highlight-color: transparent;
+}
+.kyro-cached-img.small { max-width: 46vw; max-height: 200px; }
+
+#kyroViewer {
+    position: fixed; left: 0; top: 0; right: 0; bottom: 0;
+    z-index: 2147483000;
+    background-color: rgba(0, 0, 0, 0.94);
+    display: none;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+}
+#kyroViewer.on { display: block; }
+#kyroViewerImg {
+    position: absolute; left: 50%; top: 50%;
+    max-width: 96vw; max-height: 92vh;
+    -webkit-transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
+    -webkit-transform-origin: center center;
+    transform-origin: center center;
+    -webkit-user-select: none; user-select: none;
+    -webkit-user-drag: none;
+}
+#kyroViewerTip {
+    position: absolute; left: 0; right: 0; bottom: 26px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px; letter-spacing: 1px; text-align: center;
+    pointer-events: none;
+}
 /* ===== 悬浮跳转按钮（回到顶部 / 跳到底部） =====   纯黑白灰，不掺品牌色。   深色下用中性深灰底 + 白箭头：比原来的 51% 灰暗一档，   落在主题的暗部明度带里，配一道细白描边和柔和投影拉开层次。 */
 .sjump-btn{
  position:fixed;
@@ -3360,6 +3397,7 @@ html.theme-light .settings-tagline {
 
 <link rel="icon" type="image/png" sizes="64x64" href="assets/icon-64.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/icon-180.png">
+
 
 
 
@@ -3705,7 +3743,11 @@ html.theme-light .settings-tagline {
                 </div>
             </div>
 
-            <!-- ★ 多语言入口 -->
+            <!-- ★ 图片缓存 -->
+            <div class="submenu-entry" id="clearImgCacheEntry">
+                <span class="submenu-title">清除图片缓存</span>
+                <span class="submenu-arrow">›</span>
+            </div>            <!-- ★ 多语言入口 -->
             <div class="submenu-entry" id="langEntry">
                 <span class="submenu-title">语言 / Language</span>
                 <span class="submenu-arrow">›</span>
@@ -14491,6 +14533,9 @@ if (document.readyState === 'loading') {
             '版本': '版本',
             '数据仅保存在本机浏览器': '資料僅保存在本機瀏覽器',
             '填个 API Key，就能开始对话': '填個 API Key，就能開始對話',
+            '清除图片缓存': '清除圖片快取',
+            '已清除图片缓存': '已清除圖片快取',
+            '单击关闭 · 双指缩放 · 拖动查看': '單擊關閉 · 雙指縮放 · 拖動查看',
             '⚙ 设置': '⚙ 設定',
             '项': '項',
             '最多 20 张图片 · 20 个文件（单个 ≤ 15 MB）': '最多 20 張圖片 · 20 個檔案（單個 ≤ 15 MB）',
@@ -14675,6 +14720,9 @@ if (document.readyState === 'loading') {
             '版本': 'バージョン',
             '数据仅保存在本机浏览器': 'データはこのブラウザにのみ保存されます',
             '填个 API Key，就能开始对话': 'APIキーを入れると会話を始められます',
+            '清除图片缓存': '画像キャッシュを削除',
+            '已清除图片缓存': '画像キャッシュを削除しました',
+            '单击关闭 · 双指缩放 · 拖动查看': 'タップで閉じる · ピンチで拡大 · ドラッグで移動',
             '⚙ 设置': '⚙ 設定',
             '项': '項目',
             '最多 20 张图片 · 20 个文件（单个 ≤ 15 MB）': '画像20枚・ファイル20個まで（各 ≤ 15 MB）',
@@ -14859,6 +14907,9 @@ if (document.readyState === 'loading') {
             '版本': '버전',
             '数据仅保存在本机浏览器': '데이터는 이 브라우저에만 저장됩니다',
             '填个 API Key，就能开始对话': 'API 키만 넣으면 대화를 시작할 수 있어요',
+            '清除图片缓存': '이미지 캐시 삭제',
+            '已清除图片缓存': '이미지 캐시를 삭제했습니다',
+            '单击关闭 · 双指缩放 · 拖动查看': '탭하면 닫기 · 두 손가락 확대 · 드래그 이동',
             '⚙ 设置': '⚙ 설정',
             '项': '항목',
             '最多 20 张图片 · 20 个文件（单个 ≤ 15 MB）': '이미지 20장 · 파일 20개(개당 ≤ 15MB)',
@@ -15279,6 +15330,9 @@ if (document.readyState === 'loading') {
             '探测中…（智谱 3 个通道）': 'Probing… (3 Zhipu channels)',
             '在顶栏显示联网开关（需服务商支持）': 'Show a web-search toggle in the top bar (if supported)',
             '十六进制串（避免误吃': 'Hex string (avoids confusing',
+            '清除图片缓存': 'Clear image cache',
+            '已清除图片缓存': 'Image cache cleared',
+            '单击关闭 · 双指缩放 · 拖动查看': 'Tap to close · Pinch to zoom · Drag to pan',
             '"真实花费 = 充值总额 − 当前余额"。点上方"检查账户余额"刷新': 'Real spend = top-ups − current balance. Tap "Check balance" above to refresh.',
             '0 ~ 2，默认 1': '0–2, default 1',
             '0.5 ~ 2，默认 1': '0.5–2, default 1',
@@ -15567,6 +15621,257 @@ if (document.readyState === 'loading') {
         setLang: function (v) { writeLS(LANG_KEY, v); applyLang(); },
         dict: function () { return dict(); },
         detect: detectLang
+    };
+})();
+</script>
+<script id="imgCacheScript">
+/* ===== 图片缓存（刷新不丢）+ 点击预览 + 双指缩放 =====
+   思路：消息里只保留 [图片] 占位符，真实数据按会话存进 IndexedDB；
+   渲染时用 MutationObserver 把占位符换成缓存的图片，不改动任何原有逻辑。 */
+(function () {
+    var DB = 'kyro-img-cache-v1', STORE = 'imgs', LSKEY = 'kyro-img-cache-ls-v1';
+    var LS_MAX = 2 * 1024 * 1024;                 /* 降级用 localStorage 时最多 2MB */
+    var CACHE = {};                               /* convId -> [dataURL, ...] */
+    var idb = null, mode = 'none';
+
+    function log(m) { try { console.log('[img] ' + m); } catch (e) {} }
+    function curConvId() {
+        try { var c = (typeof getCurrentConv === 'function') ? getCurrentConv() : null; return (c && c.id) ? String(c.id) : '_'; }
+        catch (e) { return '_'; }
+    }
+
+    /* ---------- 存储层 ---------- */
+    function lsLoad() {
+        try {
+            var raw = localStorage.getItem(LSKEY);
+            if (raw) CACHE = JSON.parse(raw) || {};
+        } catch (e) { CACHE = {}; }
+    }
+    function lsSave() {
+        try {
+            var s = JSON.stringify(CACHE);
+            if (s.length > LS_MAX) { log('localStorage 超限，跳过保存'); return; }
+            localStorage.setItem(LSKEY, s);
+        } catch (e) { log('localStorage 写入失败'); }
+    }
+    function openDB() {
+        try {
+            if (!window.indexedDB) { mode = 'ls'; lsLoad(); return; }
+            var rq = indexedDB.open(DB, 1);
+            rq.onupgradeneeded = function (e) {
+                var d = e.target.result;
+                if (!d.objectStoreNames.contains(STORE)) d.createObjectStore(STORE);
+            };
+            rq.onsuccess = function (e) { idb = e.target.result; mode = 'idb'; loadAll(); };
+            rq.onerror = function () { mode = 'ls'; lsLoad(); };
+            rq.onblocked = function () { mode = 'ls'; lsLoad(); };
+        } catch (e) { mode = 'ls'; lsLoad(); }
+    }
+    function loadAll() {
+        if (!idb) return;
+        try {
+            var st = idb.transaction(STORE, 'readonly').objectStore(STORE);
+            var rq = st.openCursor();
+            rq.onsuccess = function (e) {
+                var c = e.target.result;
+                if (!c) { hydrate(); return; }
+                try { CACHE[c.key] = JSON.parse(c.value) || []; } catch (x) {}
+                c.continue();
+            };
+            rq.onerror = function () {};
+        } catch (e) {}
+    }
+    function save(id) {
+        if (mode === 'idb' && idb) {
+            try { idb.transaction(STORE, 'readwrite').objectStore(STORE).put(JSON.stringify(CACHE[id] || []), id); }
+            catch (e) { log('IDB 写入失败'); }
+        } else { lsSave(); }
+    }
+    function clearAll(cb) {
+        CACHE = {};
+        var done = function () { cb && cb(); };
+        if (mode === 'idb' && idb) {
+            try {
+                var rq = idb.transaction(STORE, 'readwrite').objectStore(STORE).clear();
+                rq.onsuccess = done; rq.onerror = done; return;
+            } catch (e) {}
+        }
+        try { localStorage.removeItem(LSKEY); } catch (e) {}
+        done();
+    }
+
+    /* ---------- 1) 抓住上传的图片 ---------- */
+    function push(id, url) {
+        if (!CACHE[id]) CACHE[id] = [];
+        CACHE[id].push(url);
+        save(id);
+        setTimeout(hydrate, 60);
+    }
+    document.addEventListener('change', function (e) {
+        var t = e.target;
+        if (!t || t.type !== 'file' || !t.files || !t.files.length) return;
+        var id = curConvId();
+        for (var i = 0; i < t.files.length; i++) {
+            var f = t.files[i];
+            if (!f || !/^image\//i.test(f.type || '')) continue;
+            (function (file) {
+                try {
+                    var r = new FileReader();
+                    r.onload = function () { push(id, r.result); };
+                    r.readAsDataURL(file);
+                } catch (err) {}
+            })(f);
+        }
+    }, true);
+
+    /* ---------- 2) 渲染：占位符 → 缓存图片 ---------- */
+    function hydrate() {
+        var box = document.getElementById('messagesArea');
+        if (!box) return;
+        var list = CACHE[curConvId()] || [];
+        if (!list.length) return;
+        var spans = box.querySelectorAll('.img-placeholder');
+        if (!spans.length) return;
+        var n = 0;
+        for (var i = 0; i < spans.length && n < list.length; i++) {
+            var sp = spans[i], url = list[n++];
+            var img = document.createElement('img');
+            img.className = 'kyro-cached-img';
+            img.setAttribute('alt', 'image');
+            img.src = url;
+            try { sp.parentNode.replaceChild(img, sp); } catch (e) {}
+        }
+    }
+    var ht = null;
+    function scheduleHydrate() {
+        if (ht) return;
+        ht = setTimeout(function () { ht = null; try { hydrate(); } catch (e) {} }, 120);
+    }
+
+    /* ---------- 3) 预览：点击放大 / 再点关闭 / 双指缩放 ---------- */
+    var vw = null, vImg = null, scale = 1, tx = 0, ty = 0;
+    var startDist = 0, startScale = 1, dragging = false, moved = false, lastX = 0, lastY = 0;
+    function applyTf() {
+        if (!vImg) return;
+        vImg.style.webkitTransform = 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+        vImg.style.transform = 'translate(-50%,-50%) translate(' + tx + 'px,' + ty + 'px) scale(' + scale + ')';
+    }
+    function closeViewer() {
+        if (!vw) return;
+        vw.className = '';
+        vw.style.display = 'none';
+        scale = 1; tx = 0; ty = 0;
+        if (vImg) vImg.src = '';
+    }
+    function openViewer(url) {
+        if (!vw) return;
+        vImg.src = url;
+        scale = 1; tx = 0; ty = 0;
+        applyTf();
+        vw.className = 'on';
+        vw.style.display = 'block';
+    }
+    function buildViewer() {
+        if (vw) return;
+        vw = document.createElement('div');
+        vw.id = 'kyroViewer';
+        vImg = document.createElement('img');
+        vImg.id = 'kyroViewerImg';
+        var tip = document.createElement('div');
+        tip.id = 'kyroViewerTip';
+        tip.textContent = '单击关闭 · 双指缩放 · 拖动查看';
+        vw.appendChild(vImg); vw.appendChild(tip);
+        document.body.appendChild(vw);
+        /* 单击关闭（拖动过就不算单击） */
+        vw.addEventListener('click', function (e) {
+            if (moved) { moved = false; return; }
+            closeViewer();
+        }, false);
+        vw.addEventListener('touchstart', function (e) {
+            moved = false;
+            if (e.touches.length === 2) {
+                startDist = dist(e.touches); startScale = scale;
+            } else if (e.touches.length === 1) {
+                dragging = true; lastX = e.touches[0].clientX; lastY = e.touches[0].clientY;
+            }
+        }, false);
+        vw.addEventListener('touchmove', function (e) {
+            if (e.touches.length === 2) {
+                var d = dist(e.touches);
+                if (startDist > 0) scale = Math.min(6, Math.max(1, startScale * (d / startDist)));
+                moved = true; applyTf();
+                if (e.preventDefault) e.preventDefault();
+            } else if (e.touches.length === 1 && dragging) {
+                var x = e.touches[0].clientX, y = e.touches[0].clientY;
+                var dx = x - lastX, dy = y - lastY;
+                if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+                if (scale > 1) { tx += dx; ty += dy; applyTf(); }
+                lastX = x; lastY = y;
+                if (moved && e.preventDefault) e.preventDefault();
+            }
+        }, false);
+        vw.addEventListener('touchend', function (e) {
+            dragging = false;
+            if (!e.touches || e.touches.length === 0) startDist = 0;
+        }, false);
+        /* 双击放大 / 还原 */
+        var lastTap = 0;
+        vw.addEventListener('touchend', function (e) {
+            if (moved) return;
+            var now = (new Date()).getTime();
+            if (now - lastTap < 320) { scale = (scale > 1.2) ? 1 : 2.5; tx = 0; ty = 0; applyTf(); lastTap = 0; }
+            else lastTap = now;
+        }, false);
+    }
+    function dist(t) {
+        var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    /* 点击消息里的图片 → 预览 */
+    document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || t.tagName !== 'IMG') return;
+        if (t.id === 'kyroViewerImg') return;
+        var box = document.getElementById('messagesArea');
+        if (!(box && box.contains(t)) && t.className.indexOf('kyro-cached-img') === -1) return;
+        if (!t.src) return;
+        e.preventDefault(); e.stopPropagation();
+        buildViewer();
+        openViewer(t.src);
+    }, true);
+
+    /* ---------- 4) 设置里的"清除图片缓存" ---------- */
+    function bindClear() {
+        var el = document.getElementById('clearImgCacheEntry');
+        if (!el) return;
+        el.onclick = function () {
+            clearAll(function () {
+                try { hydrate(); } catch (e) {}
+                if (typeof showToast === 'function') showToast('已清除图片缓存');
+            });
+        };
+    }
+
+    /* ---------- 启动 ---------- */
+    function start() {
+        openDB();
+        bindClear();
+        buildViewer();
+        var box = document.getElementById('messagesArea');
+        if (box && window.MutationObserver) {
+            try { new MutationObserver(scheduleHydrate).observe(box, { childList: true, subtree: true }); } catch (e) {}
+        }
+        scheduleHydrate();
+        setTimeout(hydrate, 900);
+    }
+    if (document.readyState === 'complete') setTimeout(start, 260);
+    else window.addEventListener('load', function () { setTimeout(start, 260); });
+
+    window.__kyroImgCache = {
+        count: function () { var n = 0, k; for (k in CACHE) if (CACHE.hasOwnProperty(k)) n += CACHE[k].length; return n; },
+        clear: function () { clearAll(function () {}); },
+        mode: function () { return mode; },
+        hydrate: hydrate
     };
 })();
 </script>
