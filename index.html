@@ -13718,7 +13718,7 @@ if (document.readyState === 'loading') {
     /* ============================================================
        1. 欢迎页（打字机）
        ============================================================ */
-    var WELCOME_LINES = ['你好，欢迎使用 KYRO', '让每一次对话，都更接近答案'];
+    var WELCOME_LINES = ['一眼洞悉，万语千言', 'KYRO · 不止回答，更懂你所问'];
     var CHAR_DELAY = 85;
     var LINE_PAUSE = 420;
 
@@ -14533,6 +14533,7 @@ if (document.readyState === 'loading') {
             '请求超时': '請求逾時',
             '一眼洞悉，万语千言': '一眼洞悉，萬語千言',
             '你好，欢迎使用 KYRO': '你好，歡迎使用 KYRO',
+            'KYRO · 不止回答，更懂你所问': 'KYRO · 不止回答，更懂你所問',
             '暂无会话': '暫無會話',
             '新对话': '新對話',
             '未命名': '未命名',
@@ -14722,6 +14723,7 @@ if (document.readyState === 'loading') {
             '请求超时': 'リクエストがタイムアウトしました',
             '一眼洞悉，万语千言': '一目で見通す、千の言葉',
             '你好，欢迎使用 KYRO': 'こんにちは、KYROへようこそ',
+            'KYRO · 不止回答，更懂你所问': 'KYRO · 答えだけでなく、問いの意図まで',
             '暂无会话': '会話がありません',
             '新对话': '新しい会話',
             '未命名': '無題',
@@ -14911,6 +14913,7 @@ if (document.readyState === 'loading') {
             '请求超时': '요청 시간 초과',
             '一眼洞悉，万语千言': '한눈에 꿰뚫다, 만 가지 말',
             '你好，欢迎使用 KYRO': '안녕하세요, KYRO입니다',
+            'KYRO · 不止回答，更懂你所问': 'KYRO · 답변을 넘어 질문의 의도까지',
             '暂无会话': '대화가 없습니다',
             '新对话': '새 대화',
             '未命名': '제목 없음',
@@ -15284,6 +15287,7 @@ if (document.readyState === 'loading') {
             '手动复制：': 'Copy manually:',
             '你好，这是语音朗读的效果。': 'Hi, this is how text-to-speech sounds.',
             '你好，欢迎使用 KYRO': 'Hi, welcome to KYRO',
+            'KYRO · 不止回答，更懂你所问': 'KYRO · More than answers — it gets what you ask',
             '一眼洞悉，万语千言': 'See through at a glance',
             '让每一次对话，都更接近答案': 'Every conversation, closer to the answer',
             '制作，仅供学习交流使用': 'Made for learning and sharing only',
@@ -15448,6 +15452,24 @@ if (document.readyState === 'loading') {
         var hit = dict()[s];
         return (typeof hit === 'string' && hit) ? hit : s;
     }
+    /* ★ 智能翻译：整串 → 逐行 → 前缀。
+       欢迎页是「第一行\n第二行」的复合串，整串查不到，必须逐行查。 */
+    function trSmart(s) {
+        var out = tr(s);
+        if (out !== s) return out;
+        if (s.indexOf('\n') >= 0) {
+            var lines = s.split('\n'), changed = false, arr = [];
+            for (var i = 0; i < lines.length; i++) {
+                var L = lines[i], t = tr(L), pf;
+                if (t === L) { pf = trPrefix(L); if (pf) t = pf; }
+                if (t !== L) changed = true;
+                arr.push(t);
+            }
+            if (changed) return arr.join('\n');
+        }
+        var p = trPrefix(s);
+        return p ? p : s;
+    }
     /* ★ 前缀翻译：欢迎页打字机写的是"半截句子"（如「你好」），
        词典里只有整句，直接查必然落空 → 这里按长度比例吐出译文前缀，
        让打字机在英文等语言下也是逐步显现译文，而不是先冒中文。 */
@@ -15491,8 +15513,7 @@ if (document.readyState === 'loading') {
             if (!src || !/[\u4e00-\u9fa5]/.test(src)) { node.__last = cur; return; }
             var s = src.replace(/^\s+|\s+$/g, '');
             if (!s) { node.__last = cur; return; }
-            var out = tr(s);
-            if (out === s) { var pf = trPrefix(s); if (pf) out = pf; }
+            var out = trSmart(s);
             var want = (out === s) ? src : src.replace(s, out);
             if (cur !== want) node.nodeValue = want;
             node.__last = want;
