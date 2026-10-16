@@ -15448,6 +15448,26 @@ if (document.readyState === 'loading') {
         var hit = dict()[s];
         return (typeof hit === 'string' && hit) ? hit : s;
     }
+    /* ★ 前缀翻译：欢迎页打字机写的是"半截句子"（如「你好」），
+       词典里只有整句，直接查必然落空 → 这里按长度比例吐出译文前缀，
+       让打字机在英文等语言下也是逐步显现译文，而不是先冒中文。 */
+    function trPrefix(s) {
+        if (!s || s.length > 40) return null;
+        if (!/[\u4e00-\u9fa5]/.test(s)) return null;
+        var d = dict(), k, t;
+        for (k in d) {
+            if (!d.hasOwnProperty(k)) continue;
+            if (k.length > s.length && k.indexOf(s) === 0) {
+                t = d[k];
+                if (typeof t === 'string' && t && t !== k) {
+                    var n = Math.round(t.length * s.length / k.length);
+                    if (n < 1) n = 1;
+                    return t.slice(0, n);
+                }
+            }
+        }
+        return null;
+    }
 
     /* ---------- DOM 翻译 ---------- */
     /* 可选语言（带内置词典的会自动生效，其余可用自定义译文填充） */
@@ -15462,14 +15482,20 @@ if (document.readyState === 'loading') {
         if (!node) return;
         var t = node.nodeType;
         if (t === 3) {
-            if (node.__o === undefined) node.__o = node.nodeValue;
-            var raw = node.__o || '';
-            if (!/[\u4e00-\u9fa5]/.test(raw)) return;
-            var s = raw.replace(/^\s+|\s+$/g, '');
-            if (!s) return;
+            var cur = node.nodeValue;
+            /* ★ 若当前值与"上次写入的译文"不同，说明是程序新写进来的文本
+               （例如欢迎页打字机逐字改 textContent），此时要把当前值当作新原文，
+               否则会拿旧原文还原 → 打着打着变回中文 */
+            var src = (node.__o !== undefined && node.__last === cur) ? node.__o : cur;
+            node.__o = src;
+            if (!src || !/[\u4e00-\u9fa5]/.test(src)) { node.__last = cur; return; }
+            var s = src.replace(/^\s+|\s+$/g, '');
+            if (!s) { node.__last = cur; return; }
             var out = tr(s);
-            var want = (out === s) ? raw : raw.replace(s, out);
-            if (node.nodeValue !== want) node.nodeValue = want;
+            if (out === s) { var pf = trPrefix(s); if (pf) out = pf; }
+            var want = (out === s) ? src : src.replace(s, out);
+            if (cur !== want) node.nodeValue = want;
+            node.__last = want;
             return;
         }
         if (t !== 1) return;
@@ -15631,8 +15657,13 @@ if (document.readyState === 'loading') {
             try { mo.observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (e) {}
         }
     }
-    if (document.readyState === 'complete') setTimeout(start, 220);
-    else window.addEventListener('load', function () { setTimeout(start, 220); });
+    /* ★ 尽早启动：欢迎页打字机在 load 之前就开始逐字写入，
+       若等到 load+220ms 才挂观察者，开头几个字会先露出中文。 */
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { setTimeout(start, 30); }, false);
+    } else {
+        setTimeout(start, 30);
+    }
 
     /* 供外部调用（设置页保存后、或需要手动重刷时） */
     window.__kyroI18N = {
