@@ -7624,12 +7624,23 @@ function humanSize(bytes) {
 }
 
 /* kind: 'image' | 'gallery' | 'file' */
+/* ★ 图片判定：优先 MIME，拿不到就按扩展名兜底。
+   有些来源（HEIC、相机、部分文件管理器）file.type 是空的，
+   以前会被当成"文档"走 file 格式发给接口，直接 400
+   （file must have a file_id or file_data）。 */
+var IMG_EXT_RE = /\.(jpe?g|png|gif|webp|bmp|heic|heif|avif)$/i;
+function isImageFile(file) {
+    if (!file) return false;
+    if (file.type && file.type.indexOf('image/') === 0) return true;
+    return IMG_EXT_RE.test(file.name || '');
+}
+
 function handleFileSelect(e, kind) {
     var files = e.target.files;
     if (!files || files.length === 0) return;
     var imgCount = 0, otherCount = 0;
     for (var i = 0; i < files.length; i++) {
-        if (files[i].type && files[i].type.indexOf('image/') === 0) imgCount++;
+        if (isImageFile(files[i])) imgCount++;
         else otherCount++;
     }
     /* 分别按图片/文件两个池子算剩余额度 */
@@ -7646,7 +7657,7 @@ function handleFileSelect(e, kind) {
     var gotImg = 0, gotOther = 0;
     for (var fi = 0; fi < files.length; fi++) {
         var file = files[fi];
-        var isImg = !!(file.type && file.type.indexOf('image/') === 0);
+        var isImg = isImageFile(file);
         if (isImg) {
             if (gotImg >= takeImg) continue;
             if (file.size > MAX_IMAGE_SIZE) { showToast('图片超过 ' + humanSize(MAX_IMAGE_SIZE) + '：' + file.name); continue; }
@@ -11459,7 +11470,7 @@ function sendMessage() {
             if (!hasText && f1.dataUrl) {
                 userContent.push({
                     type: "file",
-                    file: { filename: f1.name, file_data: f1.dataUrl }
+                    file: { filename: f1.name, file_data: String(f1.dataUrl).replace(/^data:[^;]*;base64,/, '') }
                 });
                 userAttachments.push({ name: f1.name, kind: f1.kind || '', size: f1.size || 0, raw: true });
             }
