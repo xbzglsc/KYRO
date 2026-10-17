@@ -12567,7 +12567,8 @@ function updateSettingsFixedHeader(pageName) {
 function onSettingsHeaderBtnClick() {
     var header = document.getElementById('settingsFixedHeader');
     var page = header ? (header.getAttribute('data-page') || 'main') : 'main';
-    if (page === 'sub') showSettingsPage('main');
+    /* ★ 任何二级页面（lang/exp/…）都先返回主设置，而不是直接关掉整个设置 */
+    if (page && page !== 'main') showSettingsPage('main');
     else closeSettingsModal();
 }
 
@@ -13256,7 +13257,7 @@ function init() {
             if (sm.className.indexOf('show') !== -1) {
                 var header = document.getElementById('settingsFixedHeader');
                 var page = header ? (header.getAttribute('data-page') || 'main') : 'main';
-                if (page === 'sub') showSettingsPage('main');
+                if (page && page !== 'main') showSettingsPage('main');
                 else closeSettingsModal();
             }
             else {
@@ -14546,6 +14547,10 @@ if (document.readyState === 'loading') {
             '数据仅保存在本机浏览器': '資料僅保存在本機瀏覽器',
             '填个 API Key，就能开始对话': '填個 API Key，就能開始對話',
             '实验性功能': '實驗性功能',
+            '拍照时App内直接取景，不跳系统相机。开启后与系统相机取景范围、画质可能略有差异。': '拍照時 App 內直接取景，不跳系統相機。開啟後與系統相機取景範圍、畫質可能略有差異。',
+            'AI 按约定格式输出，前端直接生成可下载的真实文件，不依赖后端。': 'AI 依約定格式輸出，前端直接產生可下載的真實檔案，不依賴後端。',
+            '产物生成（网页 / 文档 / 表格 / PPT）': '產物生成（網頁 / 文件 / 試算表 / 簡報）',
+            '这些功能还在试验阶段，可能因机型 / 浏览器不同而表现不一致。': '這些功能還在試驗階段，可能因機型 / 瀏覽器不同而表現不一致。',
             '内置相机': '內建相機',
             '清除图片缓存': '清除圖片快取',
             '已清除图片缓存': '已清除圖片快取',
@@ -14736,6 +14741,10 @@ if (document.readyState === 'loading') {
             '数据仅保存在本机浏览器': 'データはこのブラウザにのみ保存されます',
             '填个 API Key，就能开始对话': 'APIキーを入れると会話を始められます',
             '实验性功能': '実験的機能',
+            '拍照时App内直接取景，不跳系统相机。开启后与系统相机取景范围、画质可能略有差异。': 'アプリ内で直接撮影し、システムカメラを開きません。構図や画質が少し異なる場合があります。',
+            'AI 按约定格式输出，前端直接生成可下载的真实文件，不依赖后端。': 'AI が決められた形式で出力し、アプリ側でダウンロード可能なファイルを生成します（バックエンド不要）。',
+            '产物生成（网页 / 文档 / 表格 / PPT）': 'ファイル生成（Web / 文書 / 表計算 / スライド）',
+            '这些功能还在试验阶段，可能因机型 / 浏览器不同而表现不一致。': 'これらの機能は試験段階で、機種やブラウザによって動作が異なる場合があります。',
             '内置相机': '内蔵カメラ',
             '清除图片缓存': '画像キャッシュを削除',
             '已清除图片缓存': '画像キャッシュを削除しました',
@@ -14926,6 +14935,10 @@ if (document.readyState === 'loading') {
             '数据仅保存在本机浏览器': '데이터는 이 브라우저에만 저장됩니다',
             '填个 API Key，就能开始对话': 'API 키만 넣으면 대화를 시작할 수 있어요',
             '实验性功能': '실험적 기능',
+            '拍照时App内直接取景，不跳系统相机。开启后与系统相机取景范围、画质可能略有差异。': '앱 안에서 바로 촬영하며 시스템 카메라를 열지 않습니다. 구도와 화질이 조금 다를 수 있습니다.',
+            'AI 按约定格式输出，前端直接生成可下载的真实文件，不依赖后端。': 'AI가 정해진 형식으로 출력하면 앱이 바로 다운로드 가능한 실제 파일을 만듭니다(백엔드 불필요).',
+            '产物生成（网页 / 文档 / 表格 / PPT）': '파일 생성(웹 / 문서 / 시트 / 슬라이드)',
+            '这些功能还在试验阶段，可能因机型 / 浏览器不同而表现不一致。': '이 기능들은 실험 단계로, 기기나 브라우저에 따라 동작이 다를 수 있습니다.',
             '内置相机': '내장 카메라',
             '清除图片缓存': '이미지 캐시 삭제',
             '已清除图片缓存': '이미지 캐시를 삭제했습니다',
@@ -15352,6 +15365,29 @@ if (document.readyState === 'loading') {
             '在顶栏显示联网开关（需服务商支持）': 'Show a web-search toggle in the top bar (if supported)',
             '十六进制串（避免误吃': 'Hex string (avoids confusing',
             '实验性功能': 'Experimental features',
+            '⚙ 设置': '⚙ Settings',
+            '项': 'items',
+            '⚠ 删除所有聊天记录（含云端）': '⚠ Delete all chats (incl. cloud)',
+            '⚠ 注销账号（永久删除）': '⚠ Delete account (permanent)',
+            '512 · 极短': '512 · Tiny',
+            '1024 · 短': '1024 · Short',
+            '2048 · 标准': '2048 · Normal',
+            '4096 · 长': '4096 · Long',
+            '8192 · 超长': '8192 · Extra long',
+            '更多语言 / More languages': 'More languages',
+            '选中即切换。没有内置词典的语言，可在下方逐条填写译文（点「生成模板」一键列出全部原文）': 'Switch on select. For languages without a built-in dictionary, fill in the translations below (tap "Generate template" to list all originals).',
+            '生成模板（列出全部原文）': 'Generate template (list all originals)',
+            'MiMo 语音合成（推荐）': 'MiMo TTS (recommended)',
+            'api-key 请求头（默认）': 'api-key header (default)',
+            'Token Plan（tp- 开头的 Key）': 'Token Plan (keys starting with tp-)',
+            '如果用 api-key 报 401/403，就切到 Bearer 再试。': 'If api-key returns 401/403, try Bearer instead.',
+            'mimo-v2.5-tts（标准）': 'mimo-v2.5-tts (standard)',
+            'mimo-v2.5-tts-voicedesign（音色设计）': 'mimo-v2.5-tts-voicedesign (voice design)',
+            'mimo-v2.5-tts-voiceclone（音色克隆）': 'mimo-v2.5-tts-voiceclone (voice clone)',
+            '拍照时App内直接取景，不跳系统相机。开启后与系统相机取景范围、画质可能略有差异。': 'Takes photos inside the app without opening the system camera. Framing and quality may differ slightly.',
+            'AI 按约定格式输出，前端直接生成可下载的真实文件，不依赖后端。': 'The AI outputs a fixed format and the app builds a real downloadable file locally — no backend needed.',
+            '产物生成（网页 / 文档 / 表格 / PPT）': 'File generation (web / doc / sheet / slides)',
+            '这些功能还在试验阶段，可能因机型 / 浏览器不同而表现不一致。': 'These features are experimental and may behave differently across devices and browsers.',
             '内置相机': 'Built-in camera',
             '清除图片缓存': 'Clear image cache',
             '已清除图片缓存': 'Image cache cleared',
