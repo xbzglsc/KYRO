@@ -13694,6 +13694,201 @@ if (document.readyState === 'loading') {
  }
 })();
 </script>
+<script id="webSearchScript">
+/* ===== 联网搜索（DeepSeek Search API）=====
+   官方接口：POST https://api.deepseek.com/v1/tools/search  {query, count, need_content}
+   做法：开启 App 自带「联网搜索」后，发消息前先请求搜索结果，
+   把结果整理成上下文注入 system prompt —— 完全不改流式发送逻辑，最稳。 */
+(function () {
+    var PREFIX = '';            /* 本轮要注入的搜索结果文本 */
+    var searching = false;
+
+    function cfg() { try { return appState.config || {}; } catch (e) { return {}; } }
+    function toast(m) { if (typeof showToast === 'function') showToast(m); }
+    function log(m) { try { console.log('[websearch] ' + m); } catch (e) {} }
+
+    /* 搜索接口基址：跟随用户配置的 DeepSeek 域名，否则用官方 */
+    function apiOrigin() {
+        var b = String(cfg().baseUrl || '');
+        var m = b.match(/^(https?:\/\/[^\/]+)/i);
+        if (m && /deepseek\.com/i.test(m[1])) return m[1];
+        return 'https://api.deepseek.com';
+    }
+    function enabled() { var c = cfg(); return !!(c.showWebSearchBtn && c.enableWebSearch && c.apiKey); }
+
+    /* 取最后一条用户消息作为查询词 */
+    function lastUserText(conv) {
+        if (!conv || !conv.messages) return '';
+        for (var i = conv.messages.length - 1; i >= 0; i--) {
+            var m = conv.messages[i];
+            if (!m || m.role !== 'user') continue;
+            var c = m.content;
+            if (typeof c === 'string') return c.replace(/\[图片\]/g, '').replace(/\s+/g, ' ').trim();
+            if (Object.prototype.toString.call(c) === '[object Array]') {
+                var t = '';
+                for (var j = 0; j < c.length; j++) if (c[j] && c[j].type === 'text') t += c[j].text;
+                return String(t || '').replace(/\s+/g, ' ').trim();
+            }
+            return '';
+        }
+        return '';
+    }
+
+    function buildContext(results, query) {
+        var d = new Date();
+        var day = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+        var lines = ['【实时联网搜索结果】（' + day + '，查询：' + query + '）',
+                     '请优先依据以下资料回答；引用信息时在句末标注对应编号和链接。若资料不足以回答，请直接说明。', ''];
+        for (var i = 0; i < results.length; i++) {
+            var r = results[i] || {};
+            lines.push((i + 1) + '. ' + (r.title || '无标题'));
+            if (r.url) lines.push('   链接：' + r.url);
+            var body = r.summary || r.snippet || r.content || '';
+            if (body) lines.push('   摘要：' + String(body).replace(/\s+/g, ' ').slice(0, 700));
+            lines.push('');
+        }
+        return lines.join('\n');
+    }
+
+    function doSearch(query, cb) {
+        var url = apiOrigin() + '/v1/tools/search';
+        var body = JSON.stringify({ query: query.slice(0, 128), count: 5, need_content: false });
+        var done = false;
+        function fin(ok, txt) { if (done) return; done = true; cb(ok, txt); }
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + cfg().apiKey);
+            xhr.timeout = 20000;
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                if (xhr.status === 200) {
+                    try {
+                        var j = JSON.parse(xhr.responseText);
+                        var rs = (j && j.results) || [];
+                        if (!rs.length) { fin(false, '没找到相关网页'); return; }
+                        fin(true, buildContext(rs, query));
+                    } catch (e) { fin(false, '结果解析失败'); }
+                } else {
+                    fin(false, 'HTTP ' + xhr.status);
+                }
+            };
+            xhr.onerror = function () { fin(false, '网络错误'); };
+            xhr.ontimeout = function () { fin(false, '超时'); };
+            xhr.send(body);
+        } catch (e) { fin(false, (e && e.message) || '异常'); }
+    }
+
+    /* ---- 注入：把结果拼到 system ---- */
+    function patchPrompt() {
+        if (typeof buildPayloadMessages !== 'function' || buildPayloadMessages.__ws) return;
+        var orig = buildPayloadMessages;
+        var wrapped = function (conv, sysContent) {
+            if (PREFIX) {
+                sysContent = (sysContent || '') + '\n\n' + PREFIX;
+                PREFIX = '';
+            }
+            return orig(conv, sysContent);
+        };
+        wrapped.__ws = 1;
+        window.buildPayloadMessages = wrapped;
+    }
+
+    /* ---- 发请求前先搜 ---- */
+    function patchTrigger() {
+        if (typeof triggerGeneration !== 'function' || triggerGeneration.__ws) return;
+        var orig = triggerGeneration;
+        var wrapped = function (conv) {
+            var args = arguments;
+            if (searching || !enabled()) return orig.apply(null, args);
+            var q = lastUserText(conv);
+            if (!q || q.length < 2) return orig.apply(null, args);
+            searching = true;
+            toast('🔍 正在联网搜索…');
+            doSearch(q, function (ok, txt) {
+                searching = false;
+                if (ok) {
+                    PREFIX = txt;
+                    var n = (txt.match(/^\d+\. /gm) || []).length;
+                    toast('🔍 已获取 ' + n + ' 条搜索结果');
+                } else {
+                    PREFIX = '';
+                    toast('联网搜索未成功（' + txt + '），按普通模式回答');
+                }
+                try { orig.apply(null, args); } catch (e) { log('trigger 失败: ' + e.message); }
+            });
+        };
+        wrapped.__ws = 1;
+        window.triggerGeneration = wrapped;
+    }
+
+    /* ---- 兜底：清掉旧版注入的 Zhipu 式 web_search 工具（DeepSeek 只认 function 工具，
+       带着会被判 400），避免影响正常对话 ---- */
+    function stripBadTools(bodyText) {
+        try {
+            var o = JSON.parse(bodyText);
+            if (o && o.tools && Object.prototype.toString.call(o.tools) === '[object Array]') {
+                var keep = [];
+                for (var i = 0; i < o.tools.length; i++) {
+                    if (o.tools[i] && o.tools[i].type === 'function') keep.push(o.tools[i]);
+                }
+                if (keep.length !== o.tools.length) {
+                    if (keep.length) o.tools = keep;
+                    else { delete o.tools; delete o.tool_choice; }
+                    return JSON.stringify(o);
+                }
+            }
+        } catch (e) {}
+        return bodyText;
+    }
+    function patchTransport() {
+        try {
+            var send = XMLHttpRequest.prototype.send;
+            if (!send.__ws) {
+                var wrapSend = function (body) {
+                    if (typeof body === 'string' && body.indexOf('"tools"') > 0) body = stripBadTools(body);
+                    return send.call(this, body);
+                };
+                wrapSend.__ws = 1;
+                XMLHttpRequest.prototype.send = wrapSend;
+            }
+        } catch (e) {}
+        try {
+            if (window.fetch && !window.fetch.__ws) {
+                var of = window.fetch;
+                var nf = function (input, init) {
+                    try {
+                        if (init && typeof init.body === 'string' && init.body.indexOf('"tools"') > 0) {
+                            init = Object.assign ? Object.assign({}, init) : init;
+                            init.body = stripBadTools(init.body);
+                        }
+                    } catch (e) {}
+                    return of.apply(this, arguments);
+                };
+                nf.__ws = 1;
+                window.fetch = nf;
+            }
+        } catch (e) {}
+    }
+
+    function start() {
+        patchPrompt();
+        patchTrigger();
+        patchTransport();
+        log('ready');
+    }
+    if (document.readyState === 'complete') setTimeout(start, 320);
+    else window.addEventListener('load', function () { setTimeout(start, 320); });
+
+    /* 调试入口 */
+    window.__kyroWebSearch = {
+        enabled: enabled,
+        search: function (q, cb) { doSearch(q, cb); },
+        pending: function () { return PREFIX; }
+    };
+})();
+</script>
 <!-- Toast 提示框 -->
 <div class="toast" id="toast"></div>
 
