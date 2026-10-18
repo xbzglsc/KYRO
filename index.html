@@ -13805,13 +13805,13 @@ if (document.readyState === 'loading') {
             var q = lastUserText(conv);
             if (!q || q.length < 2) return orig.apply(null, args);
             searching = true;
-            toast('🔍 正在联网搜索…');
+            toast('正在联网搜索…');
             doSearch(q, function (ok, txt) {
                 searching = false;
                 if (ok) {
                     PREFIX = txt;
                     var n = (txt.match(/^\d+\. /gm) || []).length;
-                    toast('🔍 已获取 ' + n + ' 条搜索结果');
+                    toast('已获取 ' + n + ' 条搜索结果');
                 } else {
                     PREFIX = '';
                     toast('联网搜索未成功（' + txt + '），按普通模式回答');
