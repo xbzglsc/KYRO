@@ -3475,7 +3475,7 @@ html.theme-light .settings-tagline {
                                 <!-- ★ 悬浮合并栏：深度思考 / 联网搜索按钮已并入输入框卡片顶部 -->
                 <div class="composer-outer-toolbar">
                     <button class="pill think-toggle" id="thinkBtn" type="button" title="深度思考开关">思考·开</button>
-                    <button class="pill web-search-toggle off" id="webSearchBtn" type="button" title="联网搜索">联网·关</button>
+                    <button class="pill web-search-toggle off" id="webSearchBtn" type="button" title="智能搜索">智能·关</button>
                 </div>
                 <div class="preview-area" id="previewArea"></div>
                 <div class="input-row">
@@ -3721,7 +3721,7 @@ html.theme-light .settings-tagline {
 
             <div class="toggle-group">
                 <div class="toggle-label">
-                    <div class="toggle-title">联网搜索按钮</div>
+                    <div class="toggle-title">智能搜索（AI 自行判断是否联网）</div>
                     <div class="toggle-desc">在顶栏显示联网开关（需服务商支持）</div>
                 </div>
                 <label class="switch">
@@ -5536,7 +5536,7 @@ function updateWebSearchBtn() {
         return;
     }
     btn.style.display = 'block';
-    if (appState.config.enableWebSearch) { btn.innerText = '联网·开'; btn.className = 'pill web-search-toggle'; }
+    if (appState.config.enableWebSearch) { btn.innerText = '智能·开'; btn.className = 'pill web-search-toggle'; }
     else { btn.innerText = '联网·关'; btn.className = 'pill web-search-toggle off'; }
 }
 function toggleWebSearch() {
@@ -12558,9 +12558,9 @@ function updateSettingsFixedHeader(pageName) {
         if (titleEl) titleEl.innerText = '聊天记录导出';
         if (doneBtn) doneBtn.innerText = '返回';
     } else {
-        header.setAttribute('data-page', 'main');
+        header.setAttribute('data-page', 'sub');
         if (titleEl) titleEl.innerText = '设置';
-        if (doneBtn) doneBtn.innerText = '完成';
+        if (doneBtn) doneBtn.innerText = '返回';
     }
 }
 
@@ -12884,7 +12884,13 @@ function init() {
     };
     document.getElementById('newChatTopBtn').onclick = handleNewConversationClick;
     document.getElementById('newChatBtn').onclick = handleNewConversationClick;
-    document.getElementById('settingsBtn').onclick = function() { openSettingsModal(); };
+    document.getElementById('settingsBtn').onclick = function() {
+        try {
+            var _sb = document.getElementById('sidebar');
+            if (_sb) { _sb.className = 'sidebar'; _sb.style.webkitTransform = ''; _sb.style.transform = ''; }
+        } catch (e) {}
+        openSettingsModal();
+    };
 
     /* ★ PC 端：左侧贴边触发显示精简会话列表 */
     setupSidebarQuickHover();
@@ -13750,6 +13756,41 @@ if (document.readyState === 'loading') {
         return lines.join('\n');
     }
 
+    function askNeed(query, cb) {
+        var url = apiOrigin() + '/chat/completions';
+        var body = JSON.stringify({
+            model: (cfg().model || 'deepseek-flash'),
+            messages: [
+                { role: 'system', content: '你是搜索路由器。判断用户这句话是否需要联网获取实时信息（新闻/价格/天气/比赛/最新版本/具体事实核查等）。只回答 YES 或 NO，不要解释。' },
+                { role: 'user', content: String(query).slice(0, 200) }
+            ],
+            max_tokens: 4,
+            temperature: 0
+        });
+        var done = false;
+        function fin(v) { if (done) return; done = true; cb(v); }
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('Authorization', 'Bearer ' + cfg().apiKey);
+            xhr.timeout = 8000;
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState !== 4) return;
+                if (xhr.status !== 200) { fin(false); return; }
+                var t = '';
+                try {
+                    var j = JSON.parse(xhr.responseText);
+                    t = String((j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '');
+                } catch (e) {}
+                fin(/yes/i.test(t));
+            };
+            xhr.onerror = function () { fin(false); };
+            xhr.ontimeout = function () { fin(false); };
+            xhr.send(body);
+        } catch (e) { fin(false); }
+    }
+
     function doSearch(query, cb) {
         var url = apiOrigin() + '/v1/tools/search';
         var body = JSON.stringify({ query: query.slice(0, 128), count: 5, need_content: false });
@@ -13805,18 +13846,21 @@ if (document.readyState === 'loading') {
             var q = lastUserText(conv);
             if (!q || q.length < 2) return orig.apply(null, args);
             searching = true;
-            toast('正在联网搜索…');
-            doSearch(q, function (ok, txt) {
-                searching = false;
-                if (ok) {
-                    PREFIX = txt;
-                    var n = (txt.match(/^\d+\. /gm) || []).length;
-                    toast('已获取 ' + n + ' 条搜索结果');
-                } else {
-                    PREFIX = '';
-                    toast('联网搜索未成功（' + txt + '），按普通模式回答');
-                }
-                try { orig.apply(null, args); } catch (e) { log('trigger 失败: ' + e.message); }
+            askNeed(q, function (need) {
+                if (!need) { searching = false; return orig.apply(null, args); }
+                toast('正在联网查找…');
+                doSearch(q, function (ok, txt) {
+                    searching = false;
+                    if (ok) {
+                        PREFIX = txt;
+                        var n = (txt.match(/^\d+\. /gm) || []).length;
+                        toast('已查到 ' + n + ' 条资料');
+                    } else {
+                        PREFIX = '';
+                        toast('没查到（' + txt + '），我直接回答');
+                    }
+                    try { orig.apply(null, args); } catch (e) { log('trigger 失败: ' + e.message); }
+                });
             });
         };
         wrapped.__ws = 1;
