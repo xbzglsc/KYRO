@@ -3475,7 +3475,7 @@ html.theme-light .settings-tagline {
                                 <!-- ★ 悬浮合并栏：深度思考 / 联网搜索按钮已并入输入框卡片顶部 -->
                 <div class="composer-outer-toolbar">
                     <button class="pill think-toggle" id="thinkBtn" type="button" title="深度思考开关">思考·开</button>
-                    <button class="pill web-search-toggle off" id="webSearchBtn" type="button" title="智能搜索">智能·关</button>
+                    <button class="pill web-search-toggle off" id="webSearchBtn" type="button" title="联网搜索">联网·关</button>
                 </div>
                 <div class="preview-area" id="previewArea"></div>
                 <div class="input-row">
@@ -3721,7 +3721,7 @@ html.theme-light .settings-tagline {
 
             <div class="toggle-group">
                 <div class="toggle-label">
-                    <div class="toggle-title">智能搜索（AI 自行判断是否联网）</div>
+                    <div class="toggle-title">联网搜索按钮</div>
                     <div class="toggle-desc">在顶栏显示联网开关（需服务商支持）</div>
                 </div>
                 <label class="switch">
@@ -5536,7 +5536,7 @@ function updateWebSearchBtn() {
         return;
     }
     btn.style.display = 'block';
-    if (appState.config.enableWebSearch) { btn.innerText = '智能·开'; btn.className = 'pill web-search-toggle'; }
+    if (appState.config.enableWebSearch) { btn.innerText = '联网·开'; btn.className = 'pill web-search-toggle'; }
     else { btn.innerText = '联网·关'; btn.className = 'pill web-search-toggle off'; }
 }
 function toggleWebSearch() {
@@ -13962,6 +13962,32 @@ if (document.readyState === 'loading') {
     }
     if (document.readyState === 'complete') setTimeout(install, 600);
     else window.addEventListener('load', function () { setTimeout(install, 600); });
+})();
+</script>
+<script id="searchPromptFix">
+/* ★ 修正联网搜索的提示词：去掉"联网搜索模式已开启"这句空话（模型会因此编造 <tool_call>），
+   并明确告诉模型：你没有工具，不要输出工具调用标记。 */
+(function () {
+    function install() {
+        if (typeof buildPayloadMessages !== 'function' || buildPayloadMessages.__fix) return;
+        var orig = buildPayloadMessages;
+        var wrapped = function (conv, sysContent) {
+            if (typeof sysContent === 'string' && sysContent) {
+                /* 删掉旧逻辑留下的误导性说明 */
+                sysContent = sysContent
+                    .replace(/当前已开启联网搜索模式[^\n]*\n?/g, '')
+                    .replace(/\n{3,}/g, '\n\n');
+                sysContent += '\n\n【重要】你没有可调用的工具函数。绝对不要输出 <tool_call>、' +
+                    'JSON 形式的工具调用或任何"我要搜索"之类的中间过程；' +
+                    '需要时效信息的答案时，直接根据已知信息回答，并说明信息可能不是最新的。';
+            }
+            return orig(conv, sysContent);
+        };
+        wrapped.__fix = 1;
+        window.buildPayloadMessages = wrapped;
+    }
+    if (document.readyState === 'complete') setTimeout(install, 700);
+    else window.addEventListener('load', function () { setTimeout(install, 700); });
 })();
 </script>
 <!-- Toast 提示框 -->
