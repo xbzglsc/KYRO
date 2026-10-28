@@ -13933,6 +13933,37 @@ if (document.readyState === 'loading') {
     };
 })();
 </script>
+<script id="settingsScrollMemo">
+/* ★ 设置二级页返回时恢复原来的滚动位置（不再跳回顶部） */
+(function () {
+    var memo = {};
+    var timer = null;
+    function install() {
+        if (typeof showSettingsPage !== 'function' || showSettingsPage.__memo) return;
+        var orig = showSettingsPage;
+        var wrapped = function (name, skip) {
+            var sc = document.getElementById('settingsScroll');
+            if (sc) {
+                var hd = document.getElementById('settingsFixedHeader');
+                var cur = hd ? (hd.getAttribute('data-page') || 'main') : 'main';
+                memo[cur === 'sub' ? 'sub' : cur] = sc.scrollTop;
+            }
+            orig(name, skip);
+            if (timer) clearTimeout(timer);
+            timer = setTimeout(function () {
+                var s2 = document.getElementById('settingsScroll');
+                if (!s2) return;
+                if (name === 'main') s2.scrollTop = memo['main'] || 0;
+                else s2.scrollTop = memo[name] || 0;
+            }, 34);
+        };
+        wrapped.__memo = 1;
+        window.showSettingsPage = wrapped;
+    }
+    if (document.readyState === 'complete') setTimeout(install, 600);
+    else window.addEventListener('load', function () { setTimeout(install, 600); });
+})();
+</script>
 <!-- Toast 提示框 -->
 <div class="toast" id="toast"></div>
 
