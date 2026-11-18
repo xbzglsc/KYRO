@@ -13,7 +13,8 @@
 <script src="https://cdn.jsdelivr.net/npm/es6-promise@4.2.8/dist/es6-promise.auto.min.js"></script>
 <script>
 /* ============================================================
-   首屏前同步主题（在 <style> 之前执行，避免浅色模式闪黑 / 深色模式闪白）
+   首屏前同步主题（在 <style>
+ 之前执行，避免浅色模式闪黑 / 深色模式闪白）
    只做最保守的 ES5 写法，安卓 5 / 老 WebView 可直接跑
    ============================================================ */
 (function () {
@@ -3376,6 +3377,67 @@ html.theme-light .settings-brand-text { color: #4A2FE0; }
 html.theme-light .settings-tagline {
     color: #6B6B80;
 }
+
+/* ===== 多 API 接口管理（嵌在 AI 配置页内） ===== */
+.ep-row {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    padding: 11px 12px; margin-top: 8px; border-radius: 11px;
+    background-color: rgba(128,128,148,0.10);
+    border: 1px solid rgba(128,128,148,0.16);
+}
+html.theme-light .ep-row { background-color: #ffffff; border-color: rgba(12,12,20,0.08); }
+.ep-main { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; min-width: 0; }
+.ep-name { font-size: 13.5px; font-weight: 600; color: #E8E8F0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html.theme-light .ep-name { color: #16161C; }
+.ep-sub { font-size: 11px; color: #8A8AA0; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ep-tag { font-size: 10px; color: #ffffff; background-color: #5B3DF5; border-radius: 8px; padding: 2px 6px; margin-left: 6px; }
+.ep-btns { display: -webkit-box; display: -webkit-flex; display: flex; -webkit-flex-shrink: 0; flex-shrink: 0; margin-left: 8px; }
+.ep-btn {
+    padding: 6px 10px; border-radius: 8px; font-size: 12px; font-family: inherit;
+    border: 1px solid rgba(91,61,245,0.45); background-color: rgba(91,61,245,0.12); color: #A695FF;
+    -webkit-tap-highlight-color: transparent; cursor: pointer;
+}
+.ep-btn + .ep-btn { margin-left: 6px; }
+html.theme-light .ep-btn { color: #4A2FE0; }
+.ep-btn.danger { border-color: rgba(255,107,107,0.5); background-color: rgba(255,107,107,0.12); color: #FF8A8A; }
+.ep-input {
+    width: 100%; box-sizing: border-box; margin-top: 8px; padding: 10px 12px;
+    border-radius: 10px; background-color: rgba(128,128,148,0.10);
+    border: 1px solid rgba(128,128,148,0.22); color: #D7D7E4;
+    font-size: 13px; font-family: inherit; outline: none;
+}
+html.theme-light .ep-input { color: #23232E; }
+.ep-sec { margin-bottom: 16px; }
+.ep-sec-title { font-size: 13px; font-weight: 600; color: #E8E8F0; }
+html.theme-light .ep-sec-title { color: #16161C; }
+
+/* ===== 会话页模型快捷切换弹窗：限高 + 可滚动 ===== */
+.model-menu {
+    max-height: 62vh;
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-orient: vertical; -webkit-flex-direction: column; flex-direction: column;
+    overflow: hidden;
+}
+#modelMenuList {
+    -webkit-box-flex: 1; -webkit-flex: 1; flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+/* 拉取到的模型：逐个选择添加 */
+.ep-pick-item {
+    display: -webkit-box; display: -webkit-flex; display: flex;
+    -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+    padding: 9px 11px; margin-top: 6px; border-radius: 9px;
+    background-color: rgba(128,128,148,0.10);
+    border: 1px solid rgba(128,128,148,0.16);
+    font-size: 12.5px; color: #D7D7E4;
+}
+html.theme-light .ep-pick-item { background-color: #fff; border-color: rgba(12,12,20,0.08); color: #23232E; }
+.ep-pick-item .ep-pick-name { -webkit-box-flex: 1; -webkit-flex: 1; flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ep-pick-item.added { opacity: 0.5; }
 </style>
 
 
@@ -3747,7 +3809,8 @@ html.theme-light .settings-tagline {
             <div class="submenu-entry" id="clearImgCacheEntry">
                 <span class="submenu-title">清除图片缓存</span>
                 <span class="submenu-arrow">›</span>
-            </div>            <!-- ★ 多语言入口 -->
+            </div>            
+<!-- ★ 多语言入口 -->
             <div class="submenu-entry" id="langEntry">
                 <span class="submenu-title">语言 / Language</span>
                 <span class="submenu-arrow">›</span>
@@ -3864,6 +3927,17 @@ html.theme-light .settings-tagline {
         </div>
 
         <div class="settings-page" id="settingsPageConfig" data-page="config">
+            <div class="ep-sec">
+                <div class="ep-sec-title">接口管理（多 API）</div>
+                <div class="tip">把下面已经填好的接口存起来，以后一键切换（地址 / Key / 模型会一起切）。切换后下方配置会同步更新。</div>
+                <div id="epList" style="margin-top:10px;"></div>
+                <div style="display:-webkit-box;display:-webkit-flex;display:flex;margin-top:10px;">
+                    <button type="button" class="ep-btn" id="epSaveCurrent" style="flex:1;-webkit-flex:1;padding:9px 0;">保存当前配置为接口</button>
+                    <button type="button" class="ep-btn" id="epFetchModels" style="flex:1;-webkit-flex:1;padding:9px 0;margin-left:10px;">拉取模型列表</button>
+                </div>
+                <div id="epModelPick" style="margin-top:10px;"></div>
+                <div class="tip" id="epTip" style="margin-top:8px;"></div>
+            </div>
             <div class="form-group">
                 <label>API 地址 (Base URL)</label>
                 <input type="text" id="cfgBase" placeholder="https://api.deepseek.com/v1">
@@ -4468,9 +4542,20 @@ function getModelConfig(modelId) {
     }
     return null;
 }
+/* ★ 视觉能力判定：除了模型列表里的 vision 标记，再按模型名兜底识别。
+   否则用 GPT-4o / Gemini 这类明明支持图片的模型，也会被误报"不支持视觉"。 */
+function guessVision(modelId) {
+    var id = String(modelId || '').toLowerCase();
+    if (!id) return false;
+    /* 明确不支持视觉的（先排除，避免 gpt-4 系列误判） */
+    if (/^(gpt-3|gpt-35|text-davinci|davinci|curie|babbage|ada)/.test(id)) return false;
+    if (/(embedding|whisper|tts|audio|rerank|moderation)/.test(id)) return false;
+    return /(gpt-4o|gpt-4\.1|gpt-4\.5|gpt-4-turbo|gpt-4-vision|gpt-5|^o1|^o3|^o4|gemini|claude-3|claude-4|claude-sonnet|claude-opus|qwen.*vl|glm-4v|glm-4\.5v|deepseek-vl|llava|pixtral|internvl|minicpm-v|grok.*vision|grok-4|-vl$|-vl-|-vision)/.test(id);
+}
 function modelSupportsVision(modelId) {
     var cfg = getModelConfig(modelId);
-    return !!(cfg && cfg.vision);
+    if (cfg && cfg.vision) return true;
+    return guessVision(modelId);
 }
 function ensureModels() {
     if (!appState.config.models || !appState.config.models.length) {
@@ -11432,8 +11517,9 @@ function sendMessage() {
                 if (appState.config.models[vi].vision) { visModel = appState.config.models[vi].id; break; }
             }
             if (visModel) switchModel(visModel);
-            else { showToast('没有可用的视觉模型'); return; }
-        } else return;
+            else showToast('没有可用的视觉模型，仍按当前模型发送');
+            /* 取消切换 = 不换模型，但照常发送（不再拦下消息） */
+        }
     }
     var conv = getCurrentConv();
     if (!conv) return;
@@ -13869,7 +13955,36 @@ if (document.readyState === 'loading') {
 
     /* ---- 兜底：清掉旧版注入的 Zhipu 式 web_search 工具（DeepSeek 只认 function 工具，
        带着会被判 400），避免影响正常对话 ---- */
+    /* ★ 思考参数按服务商归一化：
+       DeepSeek 用 thinking；OpenAI/GPT 不认 thinking（会被忽略或 400），
+       推理模型 o1/o3/o4 改用 reasoning_effort。 */
+    function normalizeBody(bodyText) {
+        if (typeof bodyText !== 'string') return bodyText;
+        var out = bodyText;
+        try {
+            var o = JSON.parse(out);
+            var model = String(o.model || '').toLowerCase();
+            var base = '';
+            try { base = String((appState.config && appState.config.baseUrl) || ''); } catch (e) {}
+            var isOAI = /^(gpt|chatgpt|o1|o3|o4)/.test(model) || /openai\.com/i.test(base);
+            if (isOAI) {
+                delete o.thinking;
+                if (/^(o1|o3|o4)/.test(model)) {
+                    var want = false;
+                    try { want = !!appState.config.deepThinking; } catch (e) {}
+                    if (want) o.reasoning_effort = 'high';
+                    else delete o.reasoning_effort;
+                } else {
+                    delete o.reasoning_effort;
+                }
+                out = JSON.stringify(o);
+            }
+        } catch (e) {}
+        return out;
+    }
+
     function stripBadTools(bodyText) {
+
         try {
             var o = JSON.parse(bodyText);
             if (o && o.tools && Object.prototype.toString.call(o.tools) === '[object Array]') {
@@ -13891,7 +14006,7 @@ if (document.readyState === 'loading') {
             var send = XMLHttpRequest.prototype.send;
             if (!send.__ws) {
                 var wrapSend = function (body) {
-                    if (typeof body === 'string' && body.indexOf('"tools"') > 0) body = stripBadTools(body);
+                    if (typeof body === 'string') body = normalizeBody(stripBadTools(body));
                     return send.call(this, body);
                 };
                 wrapSend.__ws = 1;
@@ -13903,9 +14018,9 @@ if (document.readyState === 'loading') {
                 var of = window.fetch;
                 var nf = function (input, init) {
                     try {
-                        if (init && typeof init.body === 'string' && init.body.indexOf('"tools"') > 0) {
+                        if (init && typeof init.body === 'string') {
                             init = Object.assign ? Object.assign({}, init) : init;
-                            init.body = stripBadTools(init.body);
+                            init.body = normalizeBody(stripBadTools(init.body));
                         }
                     } catch (e) {}
                     return of.apply(this, arguments);
@@ -13988,6 +14103,250 @@ if (document.readyState === 'loading') {
     }
     if (document.readyState === 'complete') setTimeout(install, 700);
     else window.addEventListener('load', function () { setTimeout(install, 700); });
+})();
+</script>
+<script id="epScript">
+/* ===== 多 API 接口管理（挂在 AI 配置页里，不再重复一套输入框） =====
+   直接复用页面上原有的「API 地址 / API Key / 模型」：
+   「保存当前配置为接口」= 把当前这三项存成一条；
+   点「使用」= 把那条写回这三项并刷新顶栏，全 App 立刻生效。 */
+(function () {
+    var KEY = 'kyro-endpoints-v1';
+    var ST = { list: [], active: '' };
+    try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); if (o && o.list) ST = o; } } catch (e) {}
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(ST)); } catch (e) {} }
+    function cfg() { try { return appState.config || {}; } catch (e) { return {}; } }
+    function toast(m) { if (typeof showToast === 'function') showToast(m); }
+    function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function uid() { return 'ep' + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+
+    function seed() {
+        if (ST.list.length) return;
+        var c = cfg();
+        if (c.baseUrl && c.apiKey && c.model) {
+            ST.list.push({ id: uid(), name: '当前接口', base: c.baseUrl || '', key: c.apiKey || '', model: c.model || '' });
+            ST.active = ST.list[0].id; save();
+        }
+    }
+
+    /* 切换：三项一起写回。空值不覆盖已有值，避免把 Key/模型清空 */
+    function apply(ep) {
+        if (!ep) return;
+        var c = cfg();
+        if (!ep.base) { toast('这个接口没存地址，没法用'); return; }
+        if (!ep.key) { toast('这个接口没存 Key，请先「载入」补上再保存'); return; }
+        if (!ep.model) { toast('这个接口没存模型，请先「载入」补上再保存'); return; }
+        c.baseUrl = ep.base;
+        c.apiKey = ep.key;
+        c.model = ep.model;
+        try {
+            c.models = c.models || [];
+            var has = false;
+            for (var i = 0; i < c.models.length; i++) if (c.models[i].id === c.model) { has = true; break; }
+            if (!has && c.model) c.models.push({ id: c.model, vision: 0, priceIn: 0, priceOut: 0 });
+        } catch (e) {}
+        ST.active = ep.id; save();
+        try { if (typeof saveState === 'function') saveState(); } catch (e) {}
+        function refreshUI() {
+            try { if (typeof applyConfigToUI === 'function') applyConfigToUI(); } catch (e) {}
+            try {
+                var mt = document.getElementById('modelTagText');
+                if (mt) mt.textContent = c.model || '';
+                var tag = document.getElementById('modelTag');
+                if (tag && c.apiKey) tag.className = 'pill model-tag';
+            } catch (e) {}
+            try { if (typeof renderHeader === 'function') renderHeader(); } catch (e) {}
+            try { if (typeof renderModelMenu === 'function') renderModelMenu(); } catch (e) {}
+            try { if (typeof renderModelSettingsList === 'function') renderModelSettingsList(); } catch (e) {}
+        }
+        refreshUI(); setTimeout(refreshUI, 60);
+        render();
+        toast('已切换到「' + ep.name + '」· ' + (ep.model || '未填模型') + (ep.key ? '' : '（未填 Key）'));
+    }
+
+    function render() {
+        var box = document.getElementById('epList');
+        if (!box) return;
+        if (!ST.list.length) { box.innerHTML = '<div class="tip">还没有保存的接口，填好上面的配置后点下面的按钮保存一条。</div>'; return; }
+        var html = '';
+        for (var i = 0; i < ST.list.length; i++) {
+            var ep = ST.list[i], on = (ep.id === ST.active);
+            html += '<div class="ep-row"><div class="ep-main">' +
+                '<div class="ep-name">' + esc(ep.name || '未命名') + (on ? '<span class="ep-tag">使用中</span>' : '') + '</div>' +
+                '<div class="ep-sub">' + esc(ep.base || '—') + (ep.model ? ' · ' + esc(ep.model) : '') + '</div>' +
+                '</div><div class="ep-btns">' +
+                (on ? '' : '<button type="button" class="ep-btn" data-use="' + ep.id + '">使用</button>') +
+                '<button type="button" class="ep-btn" data-load="' + ep.id + '">载入</button>' +
+                '<button type="button" class="ep-btn danger" data-del="' + ep.id + '">删</button>' +
+                '</div></div>';
+        }
+        box.innerHTML = html;
+    }
+
+    var PICK = [];
+    function renderPick(ids) {
+        PICK = ids || [];
+        var box = document.getElementById('epModelPick');
+        if (!box) return;
+        if (!PICK.length) { box.innerHTML = ''; return; }
+        var have = {};
+        try { var c0 = cfg(); for (var i0 = 0; i0 < (c0.models || []).length; i0++) have[c0.models[i0].id] = 1; } catch (e) {}
+        var html = '<div class="toggle-desc" style="margin-bottom:6px;">点一个添加到模型列表（可多次点击）：</div>';
+        for (var k = 0; k < PICK.length; k++) {
+            var added = !!have[PICK[k]];
+            html += '<div class="ep-pick-item' + (added ? ' added' : '') + '" data-add="' + esc(PICK[k]) + '">' +
+                '<span class="ep-pick-name">' + esc(PICK[k]) + '</span>' +
+                '<span class="ep-btn" style="padding:4px 9px;">' + (added ? '已添加' : '＋ 添加') + '</span></div>';
+        }
+        box.innerHTML = html;
+    }
+
+    function bind() {
+        var list = document.getElementById('epList');
+        if (list) list.onclick = function (e) {
+            var t = e.target; if (!t || !t.getAttribute) return;
+            var use = t.getAttribute('data-use'), load = t.getAttribute('data-load'), del = t.getAttribute('data-del');
+            if (use) { for (var i = 0; i < ST.list.length; i++) if (ST.list[i].id === use) apply(ST.list[i]); return; }
+            if (load) {
+                for (var j = 0; j < ST.list.length; j++) {
+                    if (ST.list[j].id !== load) continue;
+                    var ep = ST.list[j], c = cfg();
+                    c.baseUrl = ep.base || c.baseUrl;
+                    if (ep.key) c.apiKey = ep.key;
+                    if (ep.model) c.model = ep.model;
+                    try { if (typeof applyConfigToUI === 'function') applyConfigToUI(); } catch (e2) {}
+                    toast('已载入「' + ep.name + '」，确认后点「保存当前配置为接口」覆盖它');
+                    editing = ep.id;
+                    return;
+                }
+                return;
+            }
+            if (del) {
+                if (typeof confirm === 'function' && !confirm('删除这个接口？')) return;
+                var out = [];
+                for (var k = 0; k < ST.list.length; k++) if (ST.list[k].id !== del) out.push(ST.list[k]);
+                ST.list = out;
+                if (ST.active === del) ST.active = ST.list.length ? ST.list[0].id : '';
+                save(); render(); toast('已删除');
+            }
+        };
+        /* 从当前接口拉取可用模型，合并进模型列表（不改已有的价格配置） */
+        var fm = document.getElementById('epFetchModels');
+        if (fm) fm.onclick = function () {
+            var c = cfg();
+            var base = String(c.baseUrl || '').replace(/\/chat\/completions\/?$/i, '').replace(/\/+$/, '');
+            if (!base) { toast('请先填写 API 地址'); return; }
+            fm.disabled = true; fm.textContent = '拉取中…';
+            var done = function (msg) { fm.disabled = false; fm.textContent = '拉取模型列表'; if (msg) toast(msg); };
+            try {
+                var xhr = new XMLHttpRequest();
+                xhr.open('GET', base + '/models', true);
+                xhr.setRequestHeader('Authorization', 'Bearer ' + (c.apiKey || ''));
+                xhr.timeout = 20000;
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState !== 4) return;
+                    if (xhr.status !== 200) { done('拉取失败：HTTP ' + xhr.status); return; }
+                    var ids = [];
+                    try {
+                        var j = JSON.parse(xhr.responseText);
+                        var arr = (j && (j.data || j.models)) || [];
+                        for (var i = 0; i < arr.length; i++) {
+                            var id = (typeof arr[i] === 'string') ? arr[i] : (arr[i] && (arr[i].id || arr[i].name));
+                            if (id) ids.push(String(id));
+                        }
+                    } catch (e) {}
+                    if (!ids.length) { done('这个接口没返回模型列表'); return; }
+                    renderPick(ids);
+                    done('拉取到 ' + ids.length + ' 个模型，点下面想要的那个添加');
+                };
+                xhr.onerror = function () { done('网络错误，拉不到模型列表'); };
+                xhr.ontimeout = function () { done('超时'); };
+                xhr.send();
+            } catch (e) { done('拉取异常'); }
+        };
+
+        var pickBox = document.getElementById('epModelPick');
+        if (pickBox) pickBox.onclick = function (e) {
+            var t = e.target;
+            while (t && t !== pickBox && !(t.getAttribute && t.getAttribute('data-add'))) t = t.parentNode;
+            if (!t || !t.getAttribute) return;
+            var id = t.getAttribute('data-add');
+            if (!id) return;
+            var c = cfg();
+            c.models = c.models || [];
+            for (var i = 0; i < c.models.length; i++) if (c.models[i].id === id) { toast('已经在模型列表里了'); return; }
+            c.models.push({ id: id, vision: (typeof guessVision === 'function' && guessVision(id)) ? 1 : 0, priceIn: 0, priceOut: 0 });
+            try { if (typeof saveState === 'function') saveState(); } catch (e) {}
+            try { if (typeof renderModelSettingsList === 'function') renderModelSettingsList(); } catch (e) {}
+            try { if (typeof renderModelMenu === 'function') renderModelMenu(); } catch (e) {}
+            renderPick(PICK);
+            toast('已添加模型：' + id);
+        };
+
+        var sv = document.getElementById('epSaveCurrent');
+        if (sv) sv.onclick = function () {
+            var c = cfg();
+            var base = String(c.baseUrl || '').trim()
+                .replace(/\/chat\/completions\/?$/i, '')   /* 误把完整端点填进来时自动纠正 */
+                .replace(/\/+$/, '');
+            var key = String(c.apiKey || '').trim();
+            var model = String(c.model || '').trim();
+            if (!base) { toast('请先填写 API 地址'); return; }
+            if (!model) { toast('请先填写模型名称'); return; }
+            if (!key) { toast('请先填写 API Key'); return; }
+            if (editing) {
+                for (var i = 0; i < ST.list.length; i++) {
+                    if (ST.list[i].id === editing) {
+                        ST.list[i].base = base; ST.list[i].key = key; ST.list[i].model = model;
+                        save(); render(); toast('已更新「' + ST.list[i].name + '」'); editing = ''; return;
+                    }
+                }
+            }
+            var name = '接口 ' + (ST.list.length + 1);
+            ST.list.push({ id: uid(), name: name, base: base, key: key, model: model });
+            ST.active = ST.list[ST.list.length - 1].id;
+            save(); render();
+            toast('已保存「' + name + '」');
+        };
+        render();
+    }
+
+    /* 模型不可用类错误 → 给一句人话引导（不改动原错误显示） */
+    function watchErrors() {
+        var box = document.getElementById('messagesArea');
+        if (!box || !window.MutationObserver) return;
+        try {
+            new MutationObserver(function () {
+                var bs = box.querySelectorAll('.message.ai .bubble');
+                for (var i = 0; i < bs.length; i++) {
+                    var b = bs[i];
+                    if (b.getAttribute('data-ep-tip')) continue;
+                    var t = b.textContent || '';
+                    if (t.indexOf('请求失败') < 0) continue;
+                    if (!/model|模型|GROUP_MODEL|does not exist|not found|不支持/i.test(t)) continue;
+                    b.setAttribute('data-ep-tip', '1');
+                    var tip = document.createElement('div');
+                    tip.style.cssText = 'margin-top:10px;padding:9px 11px;border-radius:9px;font-size:12px;line-height:1.7;' +
+                        'background-color:rgba(91,61,245,0.12);border:1px solid rgba(91,61,245,0.35);color:#A695FF;';
+                    tip.textContent = '提示：这是接口返回的模型不可用错误。去「设置 → AI 配置」点「拉取模型列表」，' +
+                        '从中挑一个可用模型填到模型框，再点「保存当前配置为接口」即可。';
+                    b.appendChild(tip);
+                }
+            }).observe(box, { childList: true, subtree: true });
+        } catch (e) {}
+    }
+
+    var editing = '';
+    function start() { seed(); bind(); render(); watchErrors(); }
+    if (document.readyState === 'complete') setTimeout(start, 500);
+    else window.addEventListener('load', function () { setTimeout(start, 500); });
+
+    window.__kyroEndpoints = {
+        list: function () { return ST.list; },
+        active: function () { return ST.active; },
+        apply: function (id) { for (var i = 0; i < ST.list.length; i++) if (ST.list[i].id === id) apply(ST.list[i]); },
+        reload: render
+    };
 })();
 </script>
 <!-- Toast 提示框 -->
